@@ -1,0 +1,124 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Modelos de Perguntas para Relatório"];
+    ViewData["Caption"] = localizer["Configure aqui as perguntas dos seus relatórios."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.Report
+@model ReportViewModel
+
+
+
+<div class="card">
+
+    <!--create / reload-->
+    <div class="row mt-2">
+        <!--create button-->
+        <div class="col-lg-3 col-6">
+            @if ((AuthorizationService.AuthorizeAsync(User, Permissions.QuestionTemplate.Create)).Result.Succeeded)
+            {
+                <a onclick="jQueryModalGet('/report/QuestionTemplate/OnGetCreateOrEdit','@localizer["Criar modelo de pergunta"]', event, 'modal-lg')" class="btn btn-success mb-3">
+                    <i class="fa fa-plus-square"></i> @localizer["Criar"]
+                </a>
+            }
+        </div>
+        <!--reload button-->
+        <div class="col-lg-3 col-6">
+            <a id="reload" class="btn btn-primary text-white w-100 mb-3">
+                <i class="fa fas fa-bolt"></i>
+                @localizer["Recarregar"]
+            </a>
+        </div>
+    </div>
+
+    <!--type / version-->
+    @* <div class="row mt-2">
+        <!--question type button-->
+        <div class="col-lg-3 col-6">
+            <div class="form-floating mb-3">
+                <select id="QuestionType" name="QuestionType" class="form-select">
+                    <option value="0">@localizer["Todos os tipos"]</option>
+                    @foreach (var item in Model.QuestionTypes)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+                <label class="col-form-label" for="QuestionType">@localizer["Tipo de pergunta"]</label>
+            </div>
+        </div>
+        <!--version selector-->
+        <div class="col-lg-3 col-6">
+            <div class="form-floating mb-3">
+                <input id="VersionIndex" name="VersionIndex" type="number" class="form-control" step="1">
+                <label class="col-form-label" for="DataDashboard">@localizer["Versão"]</label>
+            </div>
+        </div>
+    </div> *@
+
+    <!--active only selector-->
+    <div class="row mt-2">
+        <div class="col-lg-3 col-6">
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="checkbox" id="ActiveIndex" name="ActiveIndex" onchange="toggleActive()" />
+                <label class="form-check-label" for="Active">@localizer["Apenas perguntas ativas"]</label>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+
+
+
+
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+
+
+            $("#QuestionType").on("change", function () {
+
+                console.log("QuestionType foi atualizada = " + $("#QuestionType").val());
+                loadData();
+            });
+
+
+            $("#VersionIndex").on("change", function () {
+                console.log("VersionIndex foi atualizada = " + $("#VersionIndex").val());
+                loadData();
+            });
+
+            function toggleActive() {
+                var _active = $('#ActiveIndex').is(':checked');
+                if (_active) {
+                    $('#ActiveIndex').val('true');
+                    $('#ActiveIndex').prop("checked", true);
+                    console.log("ActiveIndex foi marcada");
+                } else {
+                    $('#ActiveIndex').val('false');
+                    $('#ActiveIndex').prop("checked", false);
+                    console.log("ActiveIndex foi desmarcada");
+                }
+                loadData();
+            }
+
+            loadData();
+
+            $('#reload').on('click', function () {
+                loadData();
+            });
+        });
+
+        function loadData() {
+            $('#viewAll').load('/report/QuestionTemplate/LoadAll');
+        }
+
+    </script>
+}

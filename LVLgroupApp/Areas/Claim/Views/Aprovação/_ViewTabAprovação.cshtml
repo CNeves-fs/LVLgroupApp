@@ -1,0 +1,116 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Claim.Models.Aprovação
+@model TabAprovaçãoViewModel
+@{
+    ViewData.TemplateInfo.HtmlFieldPrefix = "Aprovação";
+
+}
+
+<style>
+    .wrap{
+        position: relative;
+    }
+    .wrap span {
+        position: absolute;
+        top: -25px;
+        right: 0;
+        background-color: grey;
+    }
+</style>
+
+<div id="ViewTabAprovação" class="col-md-12">
+
+    <input type="text" id="Aprovação_DataDecisão" asp-for="@Model.DataDecisão" name="Aprovação.DataDecisão" class="form-control" hidden>
+    <input type="text" id="Aprovação_EmailAutorDecisão" asp-for="@Model.EmailAutorDecisão" name="Aprovação.EmailAutorDecisão" class="form-control" hidden>
+    <input type="text" id="Aprovação_DataFecho" asp-for="@Model.DataFecho" name="Aprovação.DataFecho" class="form-control" hidden>
+    <input type="text" id="Aprovação_EmailAutorFechoEmLoja" asp-for="@Model.EmailAutorFechoEmLoja" name="Aprovação.EmailAutorFechoEmLoja" class="form-control" hidden>
+
+    <div class="row pb-lg-3">
+        <div class="col-md-12">
+            <div class="wrap">
+                <div class="form-floating mt-3">
+                    @if (Model.EnableAllEditarDecisão || Model.IsAdmin || Model.IsSuperAdmin)
+                    {
+                        <textarea id="Aprovação_DecisãoFinal" name="Aprovação.DecisãoFinal" type="text" class="form-control" asp-for="@Model.DecisãoFinal" style="height: 100px;" placeholder="name@example.com"></textarea>
+                    }
+                    else
+                    {
+                        <textarea id="Aprovação_DecisãoFinal" name="Aprovação.DecisãoFinal" type="text" class="form-control" asp-for="@Model.DecisãoFinal" style="height: 100px;" placeholder="name@example.com" readonly></textarea>
+                    }
+                    <label class="col-form-label" for="Aprovação_DecisãoFinal">@localizer["Decisão final"]</label>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.EmailAutorDecisão))
+                {
+                    <h6><span class="badge badge-secondary float-lg-end">@Model.DataDecisão.ToShortDateString() - @Model.EmailAutorDecisão</span></h6>
+                }
+            </div>
+        </div>
+    </div>
+
+    <input type="checkbox" id="Aprovação_Rejeitada" asp-for="@Model.Rejeitada" name="Aprovação.Rejeitada" class="form-control" hidden>
+    <input type="checkbox" id="Aprovação_TrocaArtigo" asp-for="@Model.TrocaArtigo" name="Aprovação.TrocaArtigo" class="form-control" hidden>
+    <input type="checkbox" id="Aprovação_DevoluçãoDinheiro" asp-for="@Model.DevoluçãoDinheiro" name="Aprovação.DevoluçãoDinheiro" class="form-control" hidden>
+    <input type="checkbox" id="Aprovação_ReparaçãoArtigo" asp-for="@Model.ReparaçãoArtigo" name="Aprovação.ReparaçãoArtigo" class="form-control" hidden>
+    <input type="checkbox" id="Aprovação_NotaCrédito" asp-for="@Model.NotaCrédito" name="Aprovação.NotaCrédito" class="form-control" hidden>
+    
+    <div class="row pb-lg-3">
+        <div class="col-md-9">
+            <div class="wrap">
+                <div class="form-floating mt-3">
+                    @if ( string.IsNullOrEmpty(Model.EmailAutorFechoEmLoja) ||
+                          ( (!string.IsNullOrEmpty(Model.EmailAutorFechoEmLoja)) && (Model.EmailCurrentUser == Model.EmailAutorFechoEmLoja) )
+                        )
+                    {
+                        <textarea id="Aprovação_ObservaçõesFecho" name="Aprovação.ObservaçõesFecho" type="text" class="form-control" asp-for="ObservaçõesFecho" style="height: 130px;" placeholder="name@example.com"></textarea>
+                    }
+                    else 
+                    {
+                        <textarea id="Aprovação_ObservaçõesFecho" name="Aprovação.ObservaçõesFecho" type="text" class="form-control" asp-for="ObservaçõesFecho" style="height: 130px;" placeholder="name@example.com" readonly></textarea>
+                    }
+                    <label class="col-form-label" for="Aprovação_ObservaçõesFecho">@localizer["Fecho em loja"]</label>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.EmailAutorFechoEmLoja))
+                {
+                    <h6><span class="badge badge-secondary float-lg-end">@Model.DataFecho.ToShortDateString() - @Model.EmailAutorFechoEmLoja</span></h6>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group ps-3 mt-3">
+                <div class="form-check">
+                    <label class="form-check-label" for="Aprovação_Rejeitada">
+                        <input type="radio" class="form-check-input" id="optradio" name="optradio" value="option1">@localizer["Rejeitada"]
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="Aprovação_TrocaArtigo">
+                        <input type="radio" class="form-check-input" id="optradio" name="optradio" value="option2">@localizer["Troca de artigo"]
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="Aprovação_ReparaçãoArtigo">
+                        <input type="radio" class="form-check-input" id="optradio" name="optradio" value="option3">@localizer["Reparação do artigo"]
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="Aprovação_DevoluçãoDinheiro">
+                        <input type="radio" class="form-check-input" id="optradio" name="optradio" value="option4">@localizer["Devolução do dinheiro"]
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label" for="Aprovação_NotaCrédito">
+                        <input type="radio" class="form-check-input" id="optradio" name="optradio" value="option5">@localizer["Nota de crédito"]
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+

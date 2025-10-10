@@ -1,0 +1,6 @@
+@LVLgroupApi_HostAddress = http://localhost:5118
+
+GET {{LVLgroupApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

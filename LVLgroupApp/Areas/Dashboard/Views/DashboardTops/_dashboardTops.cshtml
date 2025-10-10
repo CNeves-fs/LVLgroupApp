@@ -1,0 +1,870 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Dashboard.Models.DashboardTops
+@model DashboardTopsViewModel
+
+
+<link href="~/css/dashboard.css" rel="stylesheet">
+
+
+<style>
+    .nostrech {
+        width: 1%;
+        white-space: nowrap;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>@Model.TotalArtigos</h3>
+                <p>@localizer["Total de artigos"]</p>
+            </div>
+            <div class="icon">
+                <i class="ion"><img height="70" src="~/images/Icons/shoe-svgr.svg" /></i>
+            </div>
+            @if (AuthorizationService.AuthorizeAsync(User, Permissions.Artigos.Delete).Result.Succeeded)
+            {
+                <a class="small-box-footer"  asp-area="Artigo" asp-controller="Artigo" asp-action="Index">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+            else
+            {
+                <a class="small-box-footer" href="#">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>@Model.TotalClientes</h3>
+                <p>@localizer["Total de clientes"]</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            @if (AuthorizationService.AuthorizeAsync(User, Permissions.Clientes.Delete).Result.Succeeded)
+            {
+                <a class="small-box-footer" asp-area="Cliente" asp-controller="Cliente" asp-action="Index">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+            else
+            {
+                <a class="small-box-footer" href="#">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>@Model.TotalUsers</h3>
+                <p>@localizer["Total de utilizadores"]</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-ios-people"></i>
+            </div>
+            @if (AuthorizationService.AuthorizeAsync(User, Permissions.Users.Delete).Result.Succeeded)
+            {
+                <a class="small-box-footer" asp-area="Admin" asp-controller="User" asp-action="Index">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+            else
+            {
+                <a class="small-box-footer" href="#">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>@Model.TotalLojas</h3>
+                <p>@localizer["Total de lojas"]</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-ios-business"></i>
+            </div>
+            @if (AuthorizationService.AuthorizeAsync(User, Permissions.Lojas.Delete).Result.Succeeded)
+            {
+                <a class="small-box-footer" asp-area="Business" asp-controller="Loja" asp-action="Index">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+            else
+            {
+                <a class="small-box-footer" href="#">
+                    @localizer["Mais informações"]&nbsp;
+                    <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row pt-lg-5">
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 Artigos-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 Artigos"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-2">
+                    <table id="top10ArtigosTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Referência"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Empresa"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Reclamações"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 Clientes-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 Clientes"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-2">
+                    <table id="top10ClientesTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Nome"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Telefone"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Reclamações"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Aceites"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Não Aceites"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row pt-lg-5">
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 users responsavel-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 a abrir Reclamações"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-2"> 
+                    <table id="top10AberturasTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["User"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" ps-2>@localizer["Nome"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Loja"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Reclamações"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Trocas diretas"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 users fecho-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 a fechar Reclamações"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-2">
+                    <table id="top10FechosTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["User"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">@localizer["Nome"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Loja"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Reclamações"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Trocas diretas"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row pt-lg-5">
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 lojas-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 de Lojas"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table id="top10LojasTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Loja"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Agrupamento"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Reclamações"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Trocas diretas"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <!--card de suporte da tabele Top10 lojas trocadireta-->
+        <div class="card card-table my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="text-black ps-3">@localizer["Top 10 Lojas com Trocas diretas"]</h6>
+                </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table id="top10TrocasDiretasTable" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Loja"]</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">@localizer["Agrupamento"]</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-0">@localizer["Trocas diretas"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+    function FormatStringTelefone(str) {
+        const tlf = str.replace(/\s/g, '');
+        switch (tlf.length)
+        {
+            case 13:
+                return tlf.substring(0, 4) + ' ' + tlf.substring(4, 7) + ' ' + tlf.substring(7, 10) + ' ' + tlf.substring(10);
+                break;
+            case 12:
+                return tlf.substring(0, 3) + ' ' + tlf.substring(3, 6) + ' ' + tlf.substring(6, 9) + ' ' + tlf.substring(9);
+                break;
+            case 9:
+                return tlf.substring(0, 3) + ' ' + tlf.substring(3, 6) + ' ' + tlf.substring(6);
+                break;
+            default:
+                return tlf;
+                break;
+        }
+    };
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        var tableArtigos = $("#top10ArtigosTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10Artigos",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [3]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                { data: "referencia", name: "Referencia", autoWidth: true },
+                {
+                    data: "empresaLogo",
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log(data.length); // Logs output to dev tools console.
+                        if (data != null && data.length > 0) return `<div class="row">
+                                    <div class="col-sm">
+                                            <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data}">
+                                    </div>
+                                </div>`;
+                        return `<div class="row">
+                                            <div class="col-sm text-center">
+                                                <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png">
+                                            </div>
+                                        </div>`;
+                    }
+                },
+                { data: "totalClaims", name: "TotalClaims", autoWidth: true }
+            ]
+        });
+        var tableClientes = $("#top10ClientesTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10Clientes",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [2, 3, 4, 5]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3, 4, 5]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                { data: "nome", name: "Nome", autoWidth: true },
+                {
+                    data: "telefone",
+                    name: "Telefone",
+                    render: function (data, type, row) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log("cliente:" + str); // Logs output to dev tools console.
+
+                        var tlf = FormatStringTelefone(data);
+                        return`<span class="badge text-bg-success" style="padding-top: 5px;">${tlf}</span>`
+                    }
+                },
+                { data: "totalClaims", name: "TotalClaims", autoWidth: true },
+                { data: "totalClaimsAceites", name: "TotalClaimsAceites", autoWidth: true },
+                { data: "totalClaimsNaoAceites", name: "TotalClaimsNaoAceites", autoWidth: true }
+            ]
+        });
+        var tableAberturas = $("#top10AberturasTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10Aberturas",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [4, 5]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3, 4, 5]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                { 
+                    data: null,
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4);    // (Optional) beautiful indented output.
+                        //console.log(data.length);             // Logs output to dev tools console.
+                        if (data.profilePicture != null && data.profilePicture.length > 0)
+                            return `<div class="row" style="width: 100px">
+                                        <div class="col-sm">
+                                            <img class="toprint rounded-circle" style="display:block; width:100%; height:auto; max-width: 64px;" src="data:image/*;base64,${data.profilePicture}">
+                                        </div>
+                                    </div>`;
+                        return `<div class="row" style="width: 100px">
+                                    <div class="col-sm">
+                                            <img class="toprint rounded-circle" style="display:block; width:100%; height:auto; max-width: 64px;" src="/images/default-user.png">
+                                    </div>
+                                </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log("email:" + str); // Logs output to dev tools console.
+                        return `<div style="width: 180px">
+                                    <span class ="text-xs">${data.nome}</span></br>
+                                    <span class="text-xs"> ${data.email}</span></br>
+                                    <span class="badge text-xxs text-bg-success" style="padding-top: 5px;">${data.role}</span>
+                                </div>`;
+
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log(str); // Logs output to dev tools console.
+                        if (data.empresaLogo != null && data.empresaLogo.length > 0)
+                            return `<div style="width: 120px">
+                                        <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data.empresaLogo}">
+                                        <span class ="text-xs">${data.loja}</span>
+                                    </div>`;
+                        return `<div style="width: 120px">
+                                    <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png"></br>
+                                    <span class ="text-xs">${data.loja}</span>
+                                </div>`;
+                    }
+                },
+                { 
+                    data: null, 
+                    render: function (data) {
+                        return `<div class="text-center" style="width: 80px">
+                                        ${data.totalClaims}
+                                </div>`;
+                    }
+                },
+                { 
+                    data: null, 
+                    render: function (data) {
+                        return `<div class="text-center" style="width: 80px">
+                                            ${data.trocasDiretas}
+                                </div>`;
+                    }
+                }
+            ]
+        });
+        var tableFechos = $("#top10FechosTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10Fechos",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [4, 5]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3, 4, 5]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4);    // (Optional) beautiful indented output.
+                        //console.log(data.length);             // Logs output to dev tools console.
+                        if (data.profilePicture != null && data.profilePicture.length > 0)
+                            return `<div class="row" style="width: 100px">
+                                            <div class="col-sm">
+                                                <img class="toprint rounded-circle" style="display:block; width:100%; height:auto; max-width: 64px;" src="data:image/*;base64,${data.profilePicture}">
+                                            </div>
+                                        </div>`;
+                        return `<div class="row" style="width: 100px">
+                                        <div class="col-sm">
+                                            <img class="toprint rounded-circle" style="display:block; width:100%; height:auto; max-width: 64px;" src="/images/default-user.png">
+                                        </div>
+                                    </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log("email:" + str); // Logs output to dev tools console.
+                        return `<div style="width: 180px">
+                                        <span class ="text-xs">${data.nome}</span></br>
+                                        <span class="text-xs"> ${data.email}</span></br>
+                                        <span class="badge text-xxs text-bg-success" style="padding-top: 5px;">${data.role}</span>
+                                    </div>`;
+
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log(str); // Logs output to dev tools console.
+                        if (data.empresaLogo != null && data.empresaLogo.length > 0)
+                            return `<div style="width: 120px">
+                                            <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data.empresaLogo}">
+                                            <span class ="text-xs">${data.loja}</span>
+                                        </div>`;
+                        return `<div style="width: 120px">
+                                        <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png"></br>
+                                        <span class ="text-xs">${data.loja}</span>
+                                    </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        return `<div style="width: 80px">
+                                            ${data.totalClaims}
+                                    </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        return `<div style="width: 80px">
+                                                ${data.trocasDiretas}
+                                    </div>`;
+                    }
+                }
+            ]
+        });
+        var tableLojas = $("#top10LojasTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10Lojas",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [3, 4]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3, 4]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log(str); // Logs output to dev tools console.
+                        if (data.empresaLogo != null && data.empresaLogo.length > 0)
+                            return `<div style="width: 120px">
+                                        <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data.empresaLogo}">
+                                        <span class ="text-xs">${data.loja}</span>
+                                    </div>`;
+                        return `<div style="width: 120px">
+                                    <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png"></br>
+                                    <span class ="text-xs">${data.loja}</span>
+                                </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        return `<div style="width: 80px">
+                                        <span class ="text-xs">${data.agrupamento}</span>
+                                </div>`;
+                    }
+                },
+                { data: "totalClaims", name: "TotalClaims", autoWidth: true },
+                { data: "trocasDiretas", name: "TrocasDiretas", autoWidth: true }
+            ]
+        });
+        var tableTrocasDiretas = $("#top10TrocasDiretasTable").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardtops/GetTop10TrocasDiretas",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    var startDate = document.getElementById('startDate')
+                    var endDate = document.getElementById('endDate')
+                    d.desdedateClaim = startDate.value;
+                    d.atedateClaim = endDate.value;
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                }
+            },
+            columnDefs: [
+                {
+                    className: 'dt-body-center', targets: [2, 3]
+                },
+                {
+                    orderable: false, targets: [0, 1, 2, 3]
+                }
+            ],
+            columns: [
+                {
+                    data: null,
+                    name: "#",
+                    render: function (data, type, full, meta) {
+                        return `<span class="badge text-xxs text-bg-warning" style="padding-top: 5px;">${meta.row + 1}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log(str); // Logs output to dev tools console.
+                        if (data.empresaLogo != null && data.empresaLogo.length > 0)
+                            return `<div style="width: 120px">
+                                        <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data.empresaLogo}">
+                                        <span class ="text-xs">${data.loja}</span>
+                                    </div>`;
+                        return `<div style="width: 120px">
+                                    <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png"></br>
+                                    <span class ="text-xs">${data.loja}</span>
+                                </div>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        return `<div style="width: 80px">
+                                    <span class ="text-xs">${data.agrupamento}</span>     
+                                </div>`;
+                    }
+                },
+                { data: "trocasDiretas", name: "TrocasDiretas", autoWidth: true }
+            ]
+        });
+    });
+
+    var logo = getLVLlogo('logo-lvl-dark.png');
+
+    function getLVLlogo(logoName) {
+
+        let _logoName = logoName;
+        let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+        let formData = new FormData();
+        formData.append("logoName", _logoName);
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        logo = data.logoBase64;
+                        //alert(logo);
+                    }
+                },
+                error: function () {
+                    alert("getLVLlogo: Error occurs");
+                }
+            }
+        );
+
+    };
+
+</script>

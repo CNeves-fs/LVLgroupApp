@@ -1,0 +1,432 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using Core.Enums
+@using LVLgroupApp.Areas.Ocorrencia.Models.TipoOcorrencia
+@model TipoOcorrenciaViewModel
+
+<style>
+    .targetContainer {
+        min-height: 120px;
+        max-height: 150px;
+    }
+
+    #targetUsers {
+        font-size: 0.8rem;
+    }
+
+    .box {
+        width: 33%;
+        float: left;
+    }
+
+    .col-list {
+        columns: 3;
+    }
+</style>
+
+<form id="create-form" method="post" asp-area="Ocorrencia" asp-controller="TipoOcorrencia" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
+    
+    <div class="row">
+        <div class="col-md-9">
+            <div class="form-floating mb-3">
+                <input id="DefaultName" name="DefaultName" asp-for="@Model.DefaultName" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="DefaultName">@localizer["Nome"]</label>
+                <small><span asp-validation-for="@Model.DefaultName" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button id="toUsers" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                @localizer["Defenir Notificações"]
+            </button>
+            <div id="toUsersDropDown" class="dropdown-menu dropdown-menu-end p-2">
+
+                <div class="form-floating w-100 my-2">
+                    <div class="form-floating mt-3">
+                        <select name="toUserSelect" class="form-select" id="toUserSelect" data-placeholder='@localizer["Selecione um utilizador"]'>
+                            <option value="0" selected="selected">@localizer["Selecione um utilizador"]</option>
+                        </select>
+                        <label class="col-form-label" for="toUserSelect">@localizer["Utilizador"]</label>
+                    </div>
+                </div>
+
+                @foreach (var destinationType in Enum.GetNames<NotificationDestinationType>())
+                {
+                    if (destinationType == "ToSingleUser") continue;
+
+                    var val = (int)Enum.Parse(typeof(NotificationDestinationType), destinationType);
+
+                    <div class="form-check box">
+                        <input class="form-check-input chk-notif-type" type="checkbox" value="" id="flexCheckDefault">
+                        <input type="text" class="form-control hold-value" value=@destinationType hidden>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            @localizer[destinationType]
+                        </label>
+                    </div>
+                }
+
+                <button id="addNotificationDestination" type="button" class="btn btn-primary">
+                    <span class="bi bi-person-fill-add"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="form-floating mb-3">
+                <input id="EsName" name="EsName" asp-for="@Model.EsName" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="EsName">@localizer["Nome [es]"]</label>
+                <small><span asp-validation-for="@Model.EsName" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-floating">
+                <!-- Edit or Create Mode -->
+                @if (Model.EditMode)
+                {
+                    <select name="CategoriaId" class="form-select" id="CategoriaId" asp-for="@Model.CategoriaId" asp-items="@Model.Categorias" data-placeholder='@localizer["Selecione uma categoria"]' disabled>
+                    </select>
+                }
+                else
+                {
+                    <select name="CategoriaId" class="form-select" id="CategoriaId" asp-for="@Model.CategoriaId" asp-items="@Model.Categorias" data-placeholder='@localizer["Selecione uma categoria"]'>
+                    </select>
+                }
+                <label class="col-form-label" for="CategoriaOcorrênciaId">@localizer["Categoria"]</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="form-floating mb-3">
+                <input id="EnName" name="EnName" asp-for="@Model.EnName" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="EnName">@localizer["Nome [en]"]</label>
+                <small><span asp-validation-for="@Model.EnName" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-3">
+        </div>
+    </div>
+
+    <div class="mb-0">
+        @localizer["Notificar:"]
+    </div>
+    <div class="row">
+        <div class="d-flex justify-content-between col-sm-12">
+            <div class="targetContainer w-100 h-100 border border-2 border-primary rounded overflow-auto">
+                <ul id="targetUsers" class="col-list w-100 h-100 mb-0 text-start"></ul>
+            </div>
+        </div>
+        <input id="ToUserGroups" name="ToUserGroups" type="text" asp-for=ToUserGroups class="form-control" hidden>
+        <input id="ToUserIds" name="ToUserIds" type="text" asp-for="ToUserIds" class="form-control" hidden />
+        <input id="ToUserEmails" name="ToUserEmails" type="text" asp-for="ToUserEmails" class="form-control" hidden />
+    </div>
+
+    <br /><br />
+
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.TiposOcorrencias.Edit)).Result.Succeeded)
+        {
+            <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        }
+        <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    function formatToUser(toUser) {
+
+        //str = JSON.stringify(toUser, null, 4); // (Optional) beautiful indented output.
+        //console.log("toUser: " + str); // Logs output to dev tools console.
+
+        if (toUser.id == 0) {
+            return `
+                        <div class="my-2 px-3">
+                            <p class="selectUser">${toUser.text}</p>
+                        </<div>
+                    `;
+        }
+        if (!toUser.id) {
+            return `
+                        <div class="my-3 px-3">
+                                <p class="email">@localizer["Por favor aguarde ..."]</p>
+                        </<div>
+                    `;
+        }
+
+        let imagem = "";
+        if (toUser.profilePicture != null && toUser.profilePicture.length > 0) {
+            imagem = `<img class="rounded-circle" style="display:block; width:100%; max-height: 32px; max-width: 32px;" src="data:image/*;base64,${toUser.profilePicture}">`;
+        }
+        else {
+            imagem = `<img class="rounded-circle" style="display:block; width:100%; height:auto; max-width: 32px;" src="/images/default-user.png">`;
+        }
+
+        let email = toUser.email ?? "";
+        let firstName = toUser.firstName ?? "";
+        let lastName = toUser.lastName ?? "";
+        let roleName = toUser.roleName ?? "";
+        let local = toUser.local ?? "";
+
+        return `
+                    <div class="d-inline-flex flex-row border border-2 border-primary rounded">
+                        <div class="ps-3 my-3">
+                            ${imagem}
+                        </div>
+
+                            <div class="my-1 px-3">
+                                    <p class="email py-0 m-0">${email}</p>
+                                    <div class="person">
+                                            <p class="m-0">${firstName} ${lastName}</p>
+                                    </div>
+                                    <p class="designation m-0">${roleName} ${local}</p>
+                            </<div>
+
+                    </div>
+                `;
+
+    };
+
+    function addUserDestLi(strUserId, strEmail) {
+        let ul = document.getElementById("targetUsers");
+
+        let li = document.createElement('li');
+        li.setAttribute("class", "liToUser");
+        let text = document.createTextNode(strEmail + ';');
+        let input = document.createElement("input");
+        input.setAttribute("type", "hidden");
+        input.setAttribute("class", "toUserId");
+        input.setAttribute("value", strUserId);
+        let inputEmail = document.createElement("input");
+        inputEmail.setAttribute("type", "hidden");
+        inputEmail.setAttribute("class", "toUserEmail");
+        inputEmail.setAttribute("value", strEmail);
+
+        let deleteBtn = document.createElement('button');
+        deleteBtn.setAttribute("class", "btn btndelete py-0");
+        let deleteIcon = document.createElement("i");
+        deleteIcon.setAttribute("class", "fa fa-times");
+        deleteIcon.setAttribute("style", "font-size: 1em; color: red;");
+        deleteBtn.appendChild(deleteIcon);
+
+        deleteBtn.addEventListener('click', function () {
+            this.parentElement.remove();
+            updateUserDests();
+        })
+
+        //append to form
+        li.appendChild(text);
+        li.appendChild(input);
+        li.appendChild(inputEmail);
+        li.appendChild(deleteBtn);
+        ul.appendChild(li);
+    };
+
+    function addGroupDestLi(strGroup) {
+        let ul = document.getElementById("targetUsers");
+
+        let li = document.createElement('li');
+        li.setAttribute("class", "liToUserGroup");
+        let text = document.createTextNode(strGroup + ';');
+        let input = document.createElement("input");
+        input.setAttribute("type", "hidden");
+        input.setAttribute("class", "toUserGroup");
+        input.setAttribute("value", strGroup);
+
+        let deleteBtn = document.createElement('button');
+        deleteBtn.setAttribute("class", "btn btndelete py-0");
+        let deleteIcon = document.createElement("i");
+        deleteIcon.setAttribute("class", "fa fa-times");
+        deleteIcon.setAttribute("style", "font-size: 1em; color: red;");
+        deleteBtn.appendChild(deleteIcon);
+
+        deleteBtn.addEventListener('click', function () {
+            this.parentElement.remove();
+            updateGroupDests();
+        })
+
+        li.appendChild(text);
+        li.appendChild(input);
+        li.appendChild(deleteBtn);
+        ul.appendChild(li);
+    };
+
+    function updateGroupDests() {
+        let toUserGroups = document.getElementsByClassName("toUserGroup");
+        let toUserGroupsValue = "";
+        for (let i = 0; i < toUserGroups.length; i++) {
+            toUserGroupsValue += toUserGroups[i].value + ";";
+        }
+        document.getElementById("ToUserGroups").value = toUserGroupsValue;
+        console.log("ToUserGroups = " + $('#ToUserGroups').val());
+    };
+
+    function updateUserDests() {
+        // atualizar toUserId
+        let toUserIds = document.getElementsByClassName("toUserId");
+        let toUserIdsValue = "";
+        for (let i = 0; i < toUserIds.length; i++) {
+            toUserIdsValue += toUserIds[i].value + ";";
+        }
+        document.getElementById("ToUserIds").value = toUserIdsValue;
+        console.log("toUserIds = " + $('#ToUserIds').val());
+
+        // atualizar toUserEmail
+        let toUserEmails = document.getElementsByClassName("toUserEmail");
+        let toUserEmailsValue = "";
+        for (let i = 0; i < toUserEmails.length; i++) {
+            toUserEmailsValue += toUserEmails[i].value + ";";
+        }
+        document.getElementById("ToUserEmails").value = toUserEmailsValue;
+        console.log("toUserEmails = " + $('#ToUserEmails').val());
+    }
+
+    function createDestinationList() { 
+
+        console.log("createDestinationList Groups: " + $('#ToUserGroups').val());
+        console.log("createDestinationList Ids: " + $('#ToUserIds').val());
+        console.log("createDestinationList Emails: " + $('#ToUserEmails').val());
+
+        // create from groups
+        let strGroup = $('#ToUserGroups').val();
+        if (strGroup.length > 0) {
+            strGroup = strGroup.slice(0, -1);
+            let groups = strGroup.split(';');
+            for (let i = 0; i < groups.length; i++) {
+                addGroupDestLi(groups[i]);
+            }
+        }
+
+        // create from userIds
+        let strUserIds = $('#ToUserIds').val();
+        if (strUserIds.length > 0) {
+
+            strUserIds = strUserIds.slice(0, -1);
+            let userIds = strUserIds.split(';');
+            let strUserEmails = $('#ToUserEmails').val();
+            strUserEmails = strUserEmails.slice(0, -1);
+            let userEmails = strUserEmails.split(';');
+
+            for (let i = 0; i < userIds.length; i++) {
+                addUserDestLi(userIds[i], userEmails[i]);
+            }
+        }
+    };
+    
+    $(document).ready(function () {
+
+        createDestinationList();
+
+        $("#create-form").removeData("validator");
+
+        $("#create-form").validate({
+            rules: {
+                DefaultName: {
+                    required: true
+                },
+                EsName: {
+                    required: true
+                },
+                EnName: {
+                    required: true
+                }
+            },
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element) {
+                $(element).removeClass('is-valid').addClass('is-invalid');
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid').addClass('is-valid');
+            }
+        });
+
+        $("#toUserSelect").select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            dropdownParent: $('#toUsersDropDown'),
+            ajax: {
+                type: 'get',
+                url: '/Admin/User/OnGetListAllUsers',
+                contentType: "application/json; charset=utf-8",
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    var query =
+                    {
+                        term: params.term || "",
+                        page: params.page || 1
+                    };
+                    return query;
+                },
+                processResults: function (data, params) {
+
+                    //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                    //console.log(str); // Logs output to dev tools console.
+
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data.results, function (item) {
+                            //str2 = JSON.stringify(item, null, 4); // (Optional) beautiful indented output.
+                            //console.log("user item: " + str2); // Logs output to dev tools console.
+                            return item;
+                        }),
+                        pagination: {
+                            more: data.pagination.more // verificar se existem mais pages
+                        }
+                    };
+                }
+            },
+            templateResult: formatToUser,
+            templateSelection: formatToUser,
+            escapeMarkup: function (m) {
+                return m;
+            }
+        });
+
+        $('#addNotificationDestination').on('click', function () {
+            console.log('addNotificationDestination clicked');
+
+            let opt = $('#toUserSelect').select2('data');
+            if (opt.length > 0 && opt[0].id && opt[0].id.length > 1)
+            {
+                addUserDestLi(opt[0].id, opt[0].email);
+                // atualizar toUserId e toUserEmail
+                updateUserDests()
+                // limpar selection
+                $('#toUserSelect').empty().trigger('change');
+            }
+
+
+            let checkedVals = $('.chk-notif-type:checkbox:checked').map(function () {
+                let hValue = $(this).siblings('.hold-value').eq(0).val();
+                return hValue;
+            }).get();
+
+            // atualizar targetUsers
+            for (let i = 0; i < checkedVals.length; i++) {
+                addGroupDestLi(checkedVals[i]);
+            };
+
+            // atualizar ToUserGroups
+            updateGroupDests();
+
+            //limpar checkboxes
+            $('.chk-notif-type').prop('checked', false);
+        });
+
+    });
+
+</script>

@@ -1,0 +1,197 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using LVLgroupApp.Areas.Report.Models.QuestionTemplate
+@model QuestionTemplateViewModel
+
+
+
+<form id="create-form" method="post" asp-area="Report" asp-controller="QuestionTemplate" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
+
+
+    <input type="text" id="Id" name="Id"  asp-for="Id" class="form-control" hidden>
+    <input type="text" id="QuestionTypeId" name="QuestionTypeId" asp-for="QuestionTypeId" class="form-control" hidden>
+
+
+    <div class="row mt-3">
+        <div class="col-lg-6 col-12">
+            <div class="form-floating">
+                <select name="SelectQuestionTypeId" class="form-select" id="SelectQuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]'>
+                </select>
+                <label class="col-form-label" for="SelectQuestionTypeId">@localizer["Tipo de Pergunta"]</label>
+            </div>
+        </div>
+        <div class="col-lg-6 col-12">
+            <div class="form-floating">
+                <input id="CreatedAt" name="CreatedAt" type="text" class="form-control" asp-for="CreatedAt" value="@Model.CreatedAt.ToShortDateString()" readonly>
+                <label class="col-form-label" for="CreatedAt">@localizer["Criada em"]</label>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="form-floating">
+                <textarea id="Text" name="Text" type="text" class="form-control" asp-for="@Model.QuestionText" style="height: 70px;"></textarea>
+                <label class="col-form-label" for="Desc">@localizer["Pergunta"]</label>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mt-3">
+        <<div class="col-lg-6 col-12">
+            <div class="input-group">
+                <span class="input-group-text font-weight-bold"><i class="fa-fas fa-file-prescription" style="font-size: 20px;"></i></span>
+                <div class="form-floating">
+                    <input id="Version" name="Version" type="number" step="1" class="form-control" asp-for="@Model.Version" value="@Model.Version" readonly>
+                    <label class="col-form-label" for="Version">@localizer["Version"]</label>
+                </div>
+                <div class="form-floating">
+                    <input id="UsedInReports" name="UsedInReports" type="number" step="1" class="form-control" asp-for="@Model.UsedInReports" value="@Model.UsedInReports" readonly>
+                    <label class="col-form-label" for="UsedInReports">@localizer["Em Relatórios"]</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--card de suporte da tabela Top de opções possíveis da resposta-->
+    <div class="card card-table">
+        <div class="card-header p-0 position-relative mt-4 mx-3 z-index-2">
+            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                <h6 class="table-title text-black ps-3">@localizer["Opções da resposta"]</h6>
+            </div>
+        </div>
+        <div class="card-body p-0 pb-2">
+            <div class="table-responsive p-2">
+                <table id="TableEscolhasMultiplas" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">@localizer["Ordem"]</th>
+                            <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["Texto"]</th>
+                            <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["Ações"]</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br/>
+
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+
+
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    $("#create-form").removeData("validator");
+
+
+    $("#create-form").validate({
+        rules: {
+            Text: {
+                required: true
+            },
+        },
+        errorElement: "div",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback");
+            error.insertAfter(element);
+        },
+        highlight: function (element) {
+            $(element).removeClass('is-valid').addClass('is-invalid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+
+        $("#TableEscolhasMultiplas").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/report/questiontemplate/GetQuestionOtions",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    d.questionIdfilter = $('#Id').val();
+                }
+            },
+            columnDefs: [
+                {
+                    orderable: false, targets: [1, 2]
+                },
+                {
+                    className: 'dt-body-center', targets: [1, 2]
+                },
+            ],
+            columns: [
+                {
+                    data: "order",
+                    name: "Order",
+                    render: function (data, type, full) {
+                        return `<span class="badge badge-col-1 text-xxs text-bg-warning" style="padding-top: 5px;">${data}</span>`;
+                    }
+                },
+                { data: "text", name: "Text", autoWidth: true },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `<div class="btn-group dropend">
+                                        <button id="dropdown_${data}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            @localizer["Ação"]
+                                        </button>
+                                            <div class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_${data}">
+                                            <a class="dropdown-item" onclick="jQueryModalGet('/Vendas/vendasemanal/OnGetCreateOrEdit?id=${data}', '@localizer["Editar venda semanal"]', event, 'modal-xl')"><i class="fas fa-pencil-alt"></i> @localizer["Editar"]</a>
+                                            <form id="form_delete_${data}" action="/Vendas/vendasemanal/OnPostDelete?id=${data}" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover esta venda semanal?"]')">
+                                                <a class="dropdown-item" href="javascript:$('#form_delete_${data}').submit();"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                            </form>
+                                        </div>
+                                    </div>`;
+                    }
+                }
+            ]
+        })
+    });
+
+</script>

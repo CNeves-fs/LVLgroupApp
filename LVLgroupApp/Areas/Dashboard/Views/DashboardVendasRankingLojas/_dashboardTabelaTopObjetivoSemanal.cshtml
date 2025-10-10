@@ -1,0 +1,134 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Dashboard.Models.DashboardVendasRankingLojas
+@model TableTopObjetivoSemanalViewModel
+
+
+<link href="~/css/dashboard.css" rel="stylesheet">
+
+
+<style>
+    .nostrech {
+        width: 1%;
+        white-space: nowrap;
+    }
+</style>
+
+
+
+<!--card de suporte da tabela Top objetivo da semana-->
+<div class="card card-table">
+    <div class="card-header p-0 position-relative mt-4 mx-3 z-index-2">
+        <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+            <h6 class="table-title text-black ps-3">@localizer["Lojas Top Objetivo da semana"]</h6>
+        </div>
+    </div>
+    <div class="card-body p-0 pb-2">
+        <div class="table-responsive p-2">
+            <table id="TableTopObjetivoSemanal" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">#</th>
+                        <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">@localizer["Loja"]</th>
+                        <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["Qtd."]</th>
+                        <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["Valor"]</th>
+                        <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7">@localizer["Obj."]</th>
+                        <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7">@localizer["%"]</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+
+        $("#TableTopObjetivoSemanal").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            ordering: false,
+            serverSide: true,
+            stateSave: true,
+            language: {
+                url: _language
+            },
+            ajax: {
+                url: "/dashboard/dashboardvendasrankinglojas/GetVendasTabelaTopObjetivoSemanal",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    d.diafilter = @Model.Dia;
+                    d.mesfilter = @Model.Mes;
+                    d.anofilter = @Model.Ano;
+                }
+            },
+            columnDefs: [
+                {
+                    orderable: false, targets: [0, 1, 2, 3, 4, 5]
+                },
+                {
+                    className: 'dt-body-right', targets: [2, 3, 4, 5]
+                }
+            ],
+            columns: [
+                {
+                    data: "index",
+                    name: "Index",
+                    render: function (data, type, full) {
+                        return `<span class="badge badge-col-1 text-xxs text-bg-warning" style="padding-top: 5px;">${data}</span>`;
+                    }
+                },
+                {
+                    data: "lojaNome",
+                    name: "LojaNome",
+                    render: function (data, type, full) {
+                        return `<span class="badge badge-col-1 text-xxs text-bg-primary" style="padding-top: 5px;">${data}</span>`;
+                    }
+                },
+                { data: "quantidade", name: "Quantidade", autoWidth: true },
+                { data: "valor", name: "Valor", autoWidth: true },
+                { data: "objetivo", name: "Objetivo", autoWidth: true },
+                {
+                    data: "variacao",
+                    name: "Variacao",
+                    render: function (data, type, full) {
+                        if (data >= 0) return data;
+                        return `<span class="badge text-xxs text-bg-danger" style="padding-top: 5px;">${data}</span>`;
+                    }
+                },
+            ]
+        }).on('draw', function() {
+            let allTbody = document.getElementById('TableTopObjetivoSemanal').querySelectorAll('tbody');
+            console.log('draw = ' + allTbody.length);
+            let allSpan = allTbody[0].querySelectorAll(".badge-col-1");
+            if (allSpan.length) {
+                let lastSpan = allSpan[allSpan.length - 1];
+                lastSpan.classList.remove('text-bg-warning');
+                lastSpan.classList.add('text-bg-success');
+                console.log("lastSpan = " + lastSpan.className);
+            }
+        });
+    });
+
+</script>

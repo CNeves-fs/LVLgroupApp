@@ -1,0 +1,112 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@inject UserManager<ApplicationUser> UserManager
+@using Core.Enums
+@using Core.Constants
+@using Core.Entities.Identity;
+@using LVLgroupApp.Areas.Claim.Models.Foto
+@model FotoGalleryViewModel
+@Html.AntiForgeryToken()
+
+@{
+    var userId = UserManager.GetUserId(User);
+    var currentUser = await UserManager.FindByIdAsync(userId);
+    var isBasic = await UserManager.IsInRoleAsync(currentUser, Roles.Basic.ToString());
+}
+
+<div class="row pb-3 g-0 pspw-row">
+    @if (Model != null)
+    {
+        <input id="ClaimId" asp-for="ClaimId" type="hidden" value="@Model.ClaimId">
+        <input id="ClaimFolder" asp-for="ClaimFolder" type="hidden" value="@Model.ClaimFolder">
+        for (int i=0; i < Model.Fotos.Count; i++)
+        {
+            <div class="col-sm-2 pt-3 px-1 pspw-col">
+                <div class="card pspw-card" style="border: solid 1px;">
+                    <div class="pswp-gallery__item">
+                        <a href=""
+                           data-pswp-src="@Model.Fotos[i].ImageSource"
+                           data-pswp-width="@Model.Fotos[i].ImageWidth"
+                           data-pswp-height="@Model.Fotos[i].ImageHeight"
+                           target="_blank">
+                            <img class="card-img-top viewableImage" style="padding: 5px; cursor: pointer;" src="@Model.Fotos[i].ImageSource">
+                            <div class="pswp-caption-content">
+                                <b>@Model.Fotos[i].Tag</b><br>@Model.Fotos[i].Descrição<br><small>@Model.Fotos[i].FileName</small>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="card-body">
+
+                        <h6 class="card-title" style="padding-bottom: 10px;">
+                            @if (!isBasic)
+                            {
+                                <a href="#" class="fototag-editable" id="FototagId_@i" data-value="@Model.Fotos[i].FototagId" data-pk="@Model.Fotos[i].Id"></a>
+                            }
+                            else
+                            {
+                                <a href="#" id="FototagId_@i" data-value="@Model.Fotos[i].FototagId" data-pk="@Model.Fotos[i].Id"></a>
+                            }
+                            <input id="hiddenFototagId_@i" value="@Model.Fotos[i].FototagId" type="hidden">
+                        </h6>
+                        
+                        <p class="card-text">
+                            @if (!isBasic)
+                            {
+                                <a href="#" class="desc-editable" id="Descrição_@i" data-value="@Model.Fotos[i].Descrição" data-pk="@Model.Fotos[i].Id"></a>
+                            }
+                            else
+                            {
+                                <a id="Descrição_@i" data-value="@Model.Fotos[i].Descrição" data-pk="@Model.Fotos[i].Id"></a>
+                            }
+                            <input id="hiddenDescrição_@i" value="@Model.Fotos[i].Descrição" type="hidden">
+                        </p>
+
+                        <input id="hiddenFotoId_@i" value="@Model.Fotos[i].Id" type="hidden">
+
+                        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Fotos.Delete)).Result.Succeeded)
+                        {
+                            <button id="btnDelete_@i" class="btn btn-primary btn-sm text-white btnDelete">
+                                <i class="fas fa-trash-alt"></i>  @localizer["Remover"]
+                            </button>
+                        }
+                        else 
+                        {
+                            <button id="btnDelete_@i" class="btn btn-primary btn-sm text-white btnDelete" disabled>
+                                <i class="fas fa-trash-alt"></i>  @localizer["Remover"]
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+
+
+<!-- photoswipe v5.4.2 -->
+<script type="module">
+
+    import PhotoSwipeLightbox from '/lib/photoswipe/dist/photoswipe-lightbox.esm.js';
+    console.log("photoswipe-lightbox.esm.js loaded");
+    import PhotoSwipe from '/lib/photoswipe/dist/photoswipe.esm.js';
+    console.log("photoswipe.esm.js loaded");
+    import PhotoSwipeDynamicCaption from '/lib/photoswipe/photoswipe-dynamic-caption/dist/photoswipe-dynamic-caption-plugin.esm.min.js';
+    console.log("photoSwipe-dynamic-caption-plugin.esm.min.js loaded");
+
+    const lightbox = new PhotoSwipeLightbox({
+        gallery: '#viewGallery .pspw-row',
+        children: '.pspw-col .pspw-card .pswp-gallery__item a',
+        pswpModule: PhotoSwipe
+    });
+
+    const captionPlugin = new PhotoSwipeDynamicCaption(lightbox, {
+        // captionContent: '.pspw-col .pspw-card .pswp-gallery__item .pswp-caption-content',
+        mobileLayoutBreakpoint: 700,
+        type: 'auto',
+        mobileCaptionOverlapRatio: 1
+    });
+
+    lightbox.init();
+    console.log("lightbox inicializado");
+</script>

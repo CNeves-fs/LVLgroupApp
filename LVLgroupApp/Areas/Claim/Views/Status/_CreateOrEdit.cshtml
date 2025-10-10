@@ -1,0 +1,135 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Claim.Models.Status
+@model StatusViewModel
+
+<form id="create-form" method="post" asp-area="Claim" asp-controller="Status" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-floating mb-3">
+                <input id="Texto" name="Texto" asp-for="@Model.Texto" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Texto">@localizer["Texto"]</label>
+                <small><span asp-validation-for="@Model.Texto" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <select name="Tipo" class="form-select" id="Tipo" data-placeholder='@localizer["Selecione um tipo"]' asp-for="@Model.Tipo" asp-items="@Model.Tipos">
+                </select>
+                <label class="col-form-label" for="Tipo">@localizer["Tipo"]</label>
+                <small><span asp-validation-for="@Model.Tipo" class="text-danger"></span></small>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mt-3">         
+                <div class="form-floating">
+                    <input id="Cortexto" name="Cortexto" asp-for="@Model.Cortexto" type="text" class="form-control" placeholder="name@example.com">
+                    <label class="col-form-label" for="Cortexto">@localizer["Cor do texto"]</label>
+                </div>
+                <span class="input-group-append ms-2">
+                    <input type="color" value="@Model.Cortexto" id="CortextoPicker" name="CortextoPicker" class="form-control form-control-color input-block h-100" />
+                </span>
+                <small><span asp-validation-for="@Model.Cortexto" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mt-3">
+                <div class="form-floating">
+                    <input id="Corfundo" name="Corfundo" asp-for="@Model.Corfundo" type="text" class="form-control" placeholder="name@example.com">
+                    <label class="col-form-label" for="Corfundo">@localizer["Cor do fundo"]</label>
+                </div>
+                <span class="input-group-append ms-2">
+                    <input type="color" value="@Model.Corfundo" id="CorfundoPicker" name="CorfundoPicker" class="form-control form-control-color input-block h-100" />
+                </span>
+                <small><span asp-validation-for="@Model.Corfundo" class="text-danger"></span></small>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Statuss.Edit)).Result.Succeeded)
+        {
+            <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        }
+        <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    $("#create-form").removeData("validator");
+
+    jQuery.validator.addMethod("colorcode", function (value, element) {
+        return this.optional(element) || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value);
+    });
+
+    $("#create-form").validate({
+        rules: {
+            Texto: {
+                required: true
+            },
+            Tipo: {
+                required: true
+            },
+            Cortexto: {
+                required: true,
+                colorcode: true
+            },
+            Corfundo: {
+                required: true,
+                colorcode: true
+            }
+        },
+        errorElement: "div",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback");
+            if ($(element).attr('name') == "Texto") {
+                error.insertAfter(element);
+            }
+            else {
+                error.insertAfter($(element).parent().parent());
+            }
+        },
+        highlight: function (element) {
+            $(element).removeClass('is-valid').addClass('is-invalid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+    $('#Tipo').select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#form-modal')
+    });
+
+    $("#Corfundo").on("change", function () {
+        $("#CorfundoPicker").val($(this).val());
+        //alert($(this).val());
+    });
+
+    $("#CorfundoPicker").on("change", function () {
+        $('#Corfundo').val( $(this).val() );
+    });
+
+    $("#Cortexto").on("change", function () {
+        $("#CortextoPicker").val($(this).val());
+        //alert($(this).val());
+    });
+
+    $("#CortextoPicker").on("change", function () {
+        $('#Cortexto').val($(this).val());
+    });
+
+</script>

@@ -1,0 +1,178 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Dashboard.Models.DashboardVendasTops
+@model Chart_MEG_SemanalViewModel
+
+
+
+<link href="~/css/dashboard.css" rel="stylesheet">
+
+
+
+
+
+<!--Chart Vendas por Mercado/Empresa/Agrupamento-->
+<div class="row pt-0 mt-3 g-0">
+    <div class="col-lg-6 col-12">
+        <!--Div that will hold the donut chart "Mercado"-->
+        <div id="chart_mercado_div"></div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <!--Div that will hold the donut chart "Empresa"-->
+        <div id="chart_empresa_div"></div>
+    </div>
+</div>
+<div class="row pt-0 g-0">
+    <div class="col-lg-6 col-12">
+        <!--Div that will hold the donut chart "Agrupamentos Geox"-->
+        <div id="chart_grupoloja1_div"></div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <!--Div that will hold the donut chart "Agrupamentos Shechers"-->
+        <div id="chart_grupoloja2_div"></div>
+    </div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+    // var data;
+    // var chart;
+
+    // Load the Visualization API and the piechart package.
+    google.charts.load('current', { 'packages': ['corechart'] });
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawDonutMercadoSemanaChart);
+    google.charts.setOnLoadCallback(drawDonutEmpresaSemanaChart);
+    google.charts.setOnLoadCallback(drawDonutGrupoloja1SemanaChart);
+    google.charts.setOnLoadCallback(drawDonutGrupoloja2SemanaChart);
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
+    function drawDonutMercadoSemanaChart() {
+
+        // Create our data table.
+        let dataDonut = new google.visualization.DataTable();
+        dataDonut.addColumn('string', 'Mercado');
+        dataDonut.addColumn('number', 'Vendas');
+
+        let total = 0;
+        let counters = @Html.Raw(Json.Serialize(Model.M_VendasDaSemanaList));
+        //console.log(counters);
+        for (var i = 0; i < counters.length; i++) {
+            dataDonut.addRow([counters[i].entity, counters[i].entityCount]);
+            total += counters[i].entityCount;
+        }
+
+
+        let optionsDonut = {
+            'title': '@localizer["Mercado"]' + ' - ' + '@localizer["Semana"]' + '  ' + '@Model.NumeroDaSemana' + '/' + '@Model.Ano' + '    ' + (Math.round(total * 100) / 100).toFixed(2) + '  \u20AC',
+            'colors': ['red', '#1763AD', 'purple'],
+            'height': '300',
+            'pieHole': '0.4'
+        };
+
+        // Instantiate and draw our chart, passing in some options.
+        let chart_mercado = new google.visualization.PieChart(document.getElementById('chart_mercado_div'));
+        chart_mercado.draw(dataDonut, optionsDonut);
+    }
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
+    function drawDonutEmpresaSemanaChart() {
+
+        // Create our data table.
+        let dataDonut = new google.visualization.DataTable();
+        dataDonut.addColumn('string', 'Empresa');
+        dataDonut.addColumn('number', 'Vendas');
+
+        let total = 0;
+        let counters = @Html.Raw(Json.Serialize(Model.E_VendasDaSemanaList));
+        //console.log(counters);
+        for (var i = 0; i < counters.length; i++) {
+            dataDonut.addRow([counters[i].entity, counters[i].entityCount]);
+            total += counters[i].entityCount;
+        }
+
+
+        let optionsDonut = {
+            'title': '@localizer["Empresa"]' + ' - ' + '@localizer["Semana"]' + '  ' + '@Model.NumeroDaSemana' + '/' + '@Model.Ano' + '    ' + (Math.round(total * 100) / 100).toFixed(2) + '  \u20AC',
+            'colors': ['red', '#1763AD', 'purple'],
+            'height': '300',
+            'pieHole': '0.4'
+        };
+
+        // Instantiate and draw our chart, passing in some options.
+        let chart_empresa = new google.visualization.PieChart(document.getElementById('chart_empresa_div'));
+        chart_empresa.draw(dataDonut, optionsDonut);
+    }
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
+    function drawDonutGrupoloja1SemanaChart() {
+
+        // Create our data table.
+        let dataDonut = new google.visualization.DataTable();
+        dataDonut.addColumn('string', 'Agrupamentos Geox');
+        dataDonut.addColumn('number', 'Vendas');
+
+        let total = 0;
+        let counters = @Html.Raw(Json.Serialize(Model.G1_VendasDaSemanaList));
+        //console.log(counters);
+        for (var i = 0; i < counters.length; i++) {
+            dataDonut.addRow([counters[i].entity, counters[i].entityCount]);
+            total += counters[i].entityCount;
+        }
+
+
+        let optionsDonut = {
+            'title': '@localizer["Agrupamentos Geox"]' + ' - ' + '@localizer["Semana"]' + '  ' + '@Model.NumeroDaSemana' + '/' + '@Model.Ano' + '    ' + (Math.round(total * 100) / 100).toFixed(2) + '  \u20AC',
+            'colors': ['red', '#1763AD', 'purple'],
+            'height': '300',
+            'pieHole': '0.4'
+        };
+
+        // Instantiate and draw our chart, passing in some options.
+        let chart_grupoloja1 = new google.visualization.PieChart(document.getElementById('chart_grupoloja1_div'));
+        chart_grupoloja1.draw(dataDonut, optionsDonut);
+    }
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
+    function drawDonutGrupoloja2SemanaChart() {
+
+        // Create our data table.
+        let dataDonut = new google.visualization.DataTable();
+        dataDonut.addColumn('string', 'Agrupamentos Skechers');
+        dataDonut.addColumn('number', 'Claims');
+
+        let total = 0;
+        let counters = @Html.Raw(Json.Serialize(Model.G2_VendasDaSemanaList));
+        //console.log(counters);
+        for (var i = 0; i < counters.length; i++) {
+            dataDonut.addRow([counters[i].entity, counters[i].entityCount]);
+            total += counters[i].entityCount;
+        }
+
+
+        let optionsDonut = {
+            'title': '@localizer["Agrupamentos Skechers"]' + ' - ' + '@localizer["Semana"]' + '  ' + '@Model.NumeroDaSemana' + '/' + '@Model.Ano' + '    ' + (Math.round(total * 100) / 100).toFixed(2) + '  \u20AC',
+            'colors': ['red', '#1763AD', 'purple'],
+            'height': '300',
+            'pieHole': '0.4'
+        };
+
+        // Instantiate and draw our chart, passing in some options.
+        let chart_grupoloja2 = new google.visualization.PieChart(document.getElementById('chart_grupoloja2_div'));
+        chart_grupoloja2.draw(dataDonut, optionsDonut);
+    }
+
+</script>

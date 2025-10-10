@@ -1,0 +1,54 @@
+﻿@using LVLgroupApp.Areas.Admin.Models
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model RoleViewModel
+
+<form id="create-form" method="post" asp-area="Admin" asp-controller="Role" asp-route-id="@Model.Id" asp-action="OnPostCreate" onsubmit="return jQueryModalPost(this, event, false);">
+    <div class="row pb-3">
+        <div class="col-md-12">
+            <div class="form-floating mb-3">
+                <input id="Name" name="Name" asp-for="Name" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Name">@localizer["Nome"]</label>
+                <small><span asp-validation-for="Name" class="text-danger"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    $("#create-form").removeData("validator");
+    $("#create-form").validate({
+        rules: {
+            Name: {
+                required: true
+            }
+        },
+        errorElement: "div",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback");
+            error.insertAfter(element);
+        },
+        highlight: function (element) {
+            $(element).removeClass('is-valid').addClass('is-invalid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+</script>

@@ -1,0 +1,815 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Vendas semanais"];
+    ViewData["Caption"] = localizer["Configure aqui as suas Vendas semanais."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Vendas.Models.VendaSemanal
+@model VendaSemanalComparaViewModel
+
+<style>
+    .form-group > .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+
+<input type="text" id="MercadoId_index" name="MercadoId_index" class="form-control" value="@Model.CurrentRole.MercadoId" hidden>
+<input type="text" id="EmpresaId_index" name="EmpresaId_index" class="form-control" value="@Model.CurrentRole.EmpresaId" hidden>
+<input type="text" id="GrupolojaId_index" name="GrupolojaId_index" class="form-control" value="@Model.CurrentRole.GrupolojaId" hidden>
+<input type="text" id="LojaId_index" name="LojaId_index" class="form-control" value="@Model.CurrentRole.LojaId" hidden>
+
+
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card" style="padding: 10px;">
+            <div class="row mb-3">
+                <div class="col-sm-12">
+                    @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Vendas.Create)).Result.Succeeded)
+                    {
+                        <a onclick="jQueryModalGet('/vendas/vendasemanal/OnGetCreateOrEdit','@localizer["Criar venda semanal"]', event, 'modal-xl')" class="btn btn-success full-width mb-2">
+                            <i class="fa fa-plus-square"></i> @localizer["Criar"]
+                        </a>
+
+                        <a onclick="jQueryModalGet('/vendas/vendasemanal/OnGetLoadFromExcel','@localizer["Carregar vendas do excel"]', event)" class="btn btn-success full-width mb-2">
+                            <i class="fa fa-plus-square"></i> @localizer["Carregar vendas do excel"]
+                        </a>
+                    }
+                    <a id="reload" class="btn btn-primary text-white full-width mb-2">
+                        <i class="fa fas fa-bolt"></i>
+                        @localizer["Recarregar"]
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                @* filtros Mercado:Empresa:Grupolojas:Loja *@
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectMercadoId_index" id="SelectMercadoId_index" class="form-select" data-placeholder='@localizer["Selecione um mercado"]'>
+                                        <option value="0">@localizer["Selecione um mercado"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectMercadoId_index">@localizer["Mercado"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectMercadoId_index_fix" id="SelectMercadoId_index_fix" class="form-select" asp-items="Model.AnoAtual.Mercados" data-placeholder='@localizer["Selecione um mercado"]' disabled>
+                                        <option value="0">@localizer["Selecione um mercado"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectMercadoId_index_fix">@localizer["Mercado"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectEmpresaId_index" id="SelectEmpresaId_index" class="form-select" data-placeholder='@localizer["Selecione uma empresa"]'>
+                                        <option value="0">@localizer["Selecione uma empresa"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="EmpresaId_index">@localizer["Empresa"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectEmpresaId_index_fix" id="SelectEmpresaId_index_fix" class="form-select" asp-items="Model.AnoAtual.Empresas" data-placeholder='@localizer["Selecione uma empresa"]' disabled>
+                                        <option value="0">@localizer["Selecione uma empresa"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectEmpresaId_index_fix">@localizer["Empresa"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectGrupolojaId_index" id="SelectGrupolojaId_index" class="form-select" data-placeholder='@localizer["Selecione um agrupamento"]'>
+                                        <option value="0">@localizer["Selecione um agrupamento"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectGrupolojaId_index">@localizer["Agrupamento"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectGrupolojaId_index_fix" id="SelectGrupolojaId_index_fix" class="form-select" asp-items="Model.AnoAtual.GruposLojas" data-placeholder='@localizer["Selecione um agrupamento"]' disabled>
+                                        <option value="0">@localizer["Selecione um agrupamento"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectGrupolojaId_index_fix">@localizer["Agrupamento"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index" id="SelectLojaId_index" class="form-select" data-placeholder='@localizer["Selecione uma loja"]'>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index">@localizer["Loja"]</label>
+                                </div>
+                            }
+                            @if (Model.CurrentRole.IsSupervisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index" id="SelectLojaId_index" class="form-select" asp-items="Model.AnoAtual.Lojas" data-placeholder='@localizer["Selecione uma loja"]'>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index">@localizer["Loja"]</label>
+                                </div>
+                            }
+                            @if (Model.CurrentRole.IsBasic || Model.CurrentRole.IsColaborador || Model.CurrentRole.IsGerenteLoja)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index_fix" id="SelectLojaId_index_fix" class="form-select" asp-items="Model.AnoAtual.Lojas" data-placeholder='@localizer["Selecione uma loja"]' disabled>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index_fix">@localizer["Loja"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-floating mb-3">
+                    <select name="CalendarOption" id="CalendarOption" class="form-select" data-placeholder='@localizer["Selecione uma opção"]'>
+                        <option value="0">@localizer["Utilizar filtro"]</option>
+                        <option value="1">@localizer["Esta semana"]</option>
+                        <option value="2">@localizer["Semana anterior"]</option>
+                        <option value="3">@localizer["Este mês"]</option>
+                        <option value="4">@localizer["Mês anterior"]</option>
+                        <option value="5">@localizer["Este trimestre"]</option>
+                        <option value="6">@localizer["Trimestre anterior"]</option>
+                        <option value="7">@localizer["Este ano"]</option>
+                        <option value="8">@localizer["Ano anterior"]</option>
+                    </select>
+                    <label class="col-form-label label-select" for="CalendarOption">@localizer["Opções"]</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+@*                 <div class="form-group">
+                    <label class="col-form-label">@localizer["Semana"]</label>
+                    <div class="slider-2 mb-3" id="SliderNumeroSemana" style="margin-top: 36px;">
+                        <div>
+                            <div class="inverse-left"></div>
+                            <div class="inverse-right"></div>
+                            <div class="range-2"></div>
+                            <span class="thumb-2 left"></span>
+                            <span class="thumb-2 right"></span>
+                            <div class="sign-2 left">
+                                <span id="value-left"></span>
+                            </div>
+                            <div class="sign-2 right">
+                                <span id="value-right"></span>
+                            </div>
+                        </div>
+                        <input type="range" id="input-left-2" value="1" min="1" max="53" step="1" />
+                        <input type="range" id="input-right-2" value="53" min="1" max="53" step="1" />
+                    </div>
+                </div> *@
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="row mb-2">
+            <div class="col-md-12">
+                <div class="card" style="padding: 10px;">
+                    <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                        @foreach (var year in Model.AnoAtual.Years)
+                        {
+                            <input type="checkbox" class="btn-check" id="btncheck_@year" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_@year">@year</label>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-5">
+                <div class="card" style="padding: 10px;">
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input type="checkbox" class="btn-check" id="btncheck_Jan" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Jan">@localizer["Jan"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Fev" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Fev">@localizer["Fev"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Mar" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Mar">@localizer["Mar"]</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input type="checkbox" class="btn-check" id="btncheck_Abr" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Abr">@localizer["Abr"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Mai" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Mai">@localizer["Mai"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Jun" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Jun">@localizer["Jun"]</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input type="checkbox" class="btn-check" id="btncheck_Jul" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Jul">@localizer["Jul"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Ago" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Ago">@localizer["Ago"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Set" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Set">@localizer["Set"]</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input type="checkbox" class="btn-check" id="btncheck_Out" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Out">@localizer["Out"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Nov" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Nov">@localizer["Nov"]</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Dez" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Dez">@localizer["Dez"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                @* filtro trimestre *@
+                <div class="card mb-4" style="padding: 10px;">
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
+                            <input type="checkbox" class="btn-check" id="btncheck_Q1" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Q1">Q1</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Q2" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Q2">Q2</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Q3" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Q3">Q3</label>
+
+                            <input type="checkbox" class="btn-check" id="btncheck_Q4" autocomplete="off" onchange="dateFilterChanged()">
+                            <label class="btn btn-sm btn-outline" for="btncheck_Q4">Q4</label>
+                        </div>
+                    </div>
+                </div>
+                @* filtro semana *@
+                <div class="row mt-5">
+                    <div class="input-group">
+                        @* <span class="input-group-text font-weight-bold"><i class="nav-icon ion ion-ios-calendar" style="font-size: 20px;"></i></span> *@
+                        <div class="form-floating">
+                            <input id="FromSemana" name="FromSemana" type="number" step="1" min=1" max="53" value="1" class="form-control">
+                            <label class="col-form-label" for="FromSemana">@localizer["Sem. inicial"]</label>
+                        </div>
+                        <div class="form-floating">
+                            <input id="ToSemana" name="ToSemana" type="number" step="1" min="1" max="53" value="53" class="form-control">
+                            <label class="col-form-label" for="ToSemana">@localizer["Sem. final"]</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+
+        function loadData() {
+            $('#viewAll').load('/vendas/vendasemanal/LoadAll');
+        }
+
+        function dateFilterChanged()
+        {
+            let checkboxes = document.querySelectorAll('[id^="btncheck_"]');
+            let checkboxesChecked = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    let strId = checkboxes[i].id;
+                    let strFilter = strId.split(/[_]+/).pop();
+
+                    checkboxesChecked.push(strFilter);
+                    console.log(strFilter);
+                }
+            }
+            $('#vendaSemanalTable').DataTable().draw();
+        }
+
+        function LoadGrupolojaSelect_index(empId) {
+            //alert("Empresa changed = " + empId);
+
+            var _empresaId = empId;
+            var _url = "/Business/Grupoloja/LoadGruposlojas?empresaId=_empresaId";
+            var formData = new FormData();
+            formData.append("empresaId", _empresaId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        //$("#GrupolojaId_index").val(0);
+                        $('#SelectGrupolojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione um agrupamento"]');
+                        $(option).appendTo("#SelectGrupolojaId_index");
+                        $(_list.gruposlojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectGrupolojaId_index");
+                        });
+                        $("#GrupolojaId_index").val($("#SelectGrupolojaId_index").val());
+                        LoadLojaSelect_index($("#SelectGrupolojaId_index").val());
+                        $('#vendaSemanalTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+        };
+
+        function LoadLojaSelect_index(grupoId) {
+            //alert("Grupoloja changed = " + grupoId);
+
+            var _grupolojaId = grupoId;
+            var _url = "/Business/Loja/LoadLojasInGrupoloja?grupolojaId=_grupolojaId";
+            var formData = new FormData();
+            formData.append("grupolojaId", _grupolojaId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#LojaId_index").val(0);
+                        $('#SelectLojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma loja"]');
+                        $(option).appendTo("#SelectLojaId_index");
+                        $(_list.lojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectLojaId_index");
+                        });
+                        $("#LojaId_index").val($("#SelectLojaId_index").val());
+                        $('#vendaSemanalTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadLojaSelectFromMercado_index(mercadoId) {
+            //alert("Mercado changed = " + mercadoId);
+
+            var _mercadoId = mercadoId;
+            var _url = "/Business/Loja/LoadLojasInMercado?mercadoId=_mercadoId";
+            var formData = new FormData();
+            formData.append("mercadoId", _mercadoId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#LojaId_index").val(0);
+                        $('#SelectLojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma loja"]');
+                        $(option).appendTo("#SelectLojaId_index");
+                        $(_list.lojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectLojaId_index");
+                        });
+                        $("#LojaId_index").val($("#SelectLojaId_index").val());
+                        $('#vendaSemanalTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadAllEmpresas_index() {
+            //alert("Empresas inicializados");
+
+            var _url = "/Business/Empresa/LoadAllEmpresas";
+            var formData = new FormData();
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#EmpresaId_index").val(0);
+                        $('#SelectEmpresaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma empresa"]');
+                        $(option).appendTo("#SelectEmpresaId_index");
+                        $(_list.empresasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectEmpresaId_index");
+                        });
+                        $("#EmpresaId_index").val($("#SelectEmpresaId_index").val());
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadAllMercados_index() {
+            //alert("Mercados inicializados");
+
+            var _url = "/Business/Mercado/LoadAllMercados";
+            var formData = new FormData();
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#MercadoId_index").val(0);
+                        $('#SelectMercadoId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione um mercado"]');
+                        $(option).appendTo("#SelectMercadoId_index");
+                        $(_list.mercadosList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectMercadoId_index");
+                        });
+                        $("#MercadoId_index").val($("#SelectMercadoId_index").val());
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        $(document).ready(function () {
+
+
+            //------------------------- Inicializar plugin select2 ----------------------------
+
+
+            $('#SelectMercadoId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectEmpresaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectGrupolojaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectLojaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#CalendarOption').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+
+            //------------------------- Event Listeners ----------------------------
+
+
+            $("#SelectMercadoId_index").on("change", function () {
+                $("#MercadoId_index").val(this.value);
+                if (this.value > 0) {
+                    // selecionar loja atraves do Mercado
+                    $('#SelectEmpresaId_index').val(0);
+                    $('#SelectGrupolojaId_index').find('option').remove();
+                    $('#SelectLojaId_index').find('option').remove();
+                    $('#SelectEmpresaId_index').prop('disabled', true);
+                    $('#SelectGrupolojaId_index').prop('disabled', true);
+                    LoadLojaSelectFromMercado_index(this.value);
+                }
+                else {
+                    // selecionar loja atraves da Empresa
+                    $('#SelectEmpresaId_index').prop('disabled', false);
+                    $('#SelectGrupolojaId_index').prop('disabled', false);
+                    console.log("MercadoId=0, selecionar loja atraves da Empresa, #EmpresaId_index=" + $('#EmpresaId_index').val());
+                    LoadGrupolojaSelect_index($('#EmpresaId_index').val());
+                }
+            });
+
+            $("#SelectEmpresaId_index").on("change", function () {
+                $("#EmpresaId_index").val(this.value);
+                if (this.value > 0) {
+                    // selecionar loja atraves da Empresa
+                    $('#SelectMercadoId_index').prop('disabled', true);
+                    LoadGrupolojaSelect_index(this.value);
+                }
+                else {
+                    // selecionar loja atraves do Mercado
+                    $('#SelectEmpresaId_index').val(0);
+                    $('#SelectGrupolojaId_index').find('option').remove();
+                    $('#SelectLojaId_index').find('option').remove();
+                    $('#SelectMercadoId_index').prop('disabled', false);
+                    //LoadLojaSelect_index(this.value);
+                }
+            });
+
+            $("#SelectGrupolojaId_index").on("change", function () {
+                $("#GrupolojaId_index").val(this.value);
+                LoadLojaSelect_index(this.value);
+            });
+
+            $("#SelectLojaId_index").on("change", function () {
+                $("#LojaId_index").val(this.value);
+                $('#vendaSemanalTable').DataTable().draw();
+            });
+
+            $("#CalendarOption").on("change", function () {
+                //alert("calendar option = " + this.value);
+                console.log("calendar option = " + this.value);
+
+                let disabled = this.value > 0;
+                let checkboxes = document.querySelectorAll('[id^="btncheck_"]');
+                for (var i = 0; i < checkboxes.length; i++)
+                {
+                    checkboxes[i].disabled = disabled;
+                }
+                //document.querySelector("#rangeDate_index")._flatpickr.input.disabled = disabled;
+                document.querySelector("#FromSemana").disabled = disabled;
+                document.querySelector("#ToSemana").disabled = disabled;
+                
+                
+                $('#vendaSemanalTable').DataTable().draw();
+            });
+
+            $("#FromSemana").on("change", function () {
+
+                console.log("FromSemana = " + this.value);
+                let max = parseInt($("#ToSemana").val());
+                if (this.value > max) $("#FromSemana").val(max);
+
+                $('#vendaSemanalTable').DataTable().draw();
+            });
+
+            $("#ToSemana").on("change", function () {
+
+                console.log("ToSemana = " + this.value);
+                let min = parseInt($("#FromSemana").val());
+                if (this.value < min) $("#ToSemana").val(min);
+
+                $('#vendaSemanalTable').DataTable().draw();
+            });
+
+
+            // ------------------- rangeDate ------------------------
+
+
+            flatpickr.l10ns.default.firstDayOfWeek = 1; // Monday
+
+            // $('#rangeDate_index').flatpickr({
+            //     mode: "range",
+            //     onClose: function (selectedDates, dateStr, instance) {
+            //         var dateStart = instance.formatDate(selectedDates[0], '@localizer["d-m-Y"]');
+            //         var dateEnd = instance.formatDate(selectedDates[1], '@localizer["d-m-Y"]');
+
+            //         console.log(dateStart)
+            //         console.log(dateEnd)
+            //     },
+            //     weekNumbers: true,
+            //     dateFormat: '@localizer["d-m-Y"]',
+            //     locale: '@localizer["pt"]'
+            // });
+            // let rangeDate = document.getElementById('rangeDate_index');
+            // let currentRangeDateVal = localStorage.getItem("currentRangeDateVal");
+            // if (currentRangeDateVal !== null) {
+
+            //     $('#rangeDate_index').val(currentRangeDateVal);
+            //     console.log("currentRangeDateVal = " + currentRangeDateVal);
+            // };
+            // rangeDate.addEventListener('change', (e) => {
+            //     let rangeDateVal = e.target.value;
+            //     if (rangeDateVal === null || rangeDateVal === "") {
+            //         localStorage.removeItem("currentRangeDateVal");
+            //     }
+            //     else {
+            //         localStorage.setItem("changed RangeDateVal", rangeDateVal);
+            //     }
+            //     console.log("rangeDateVal = " + e.target.value);
+            //     $('#vendaSemanalTable').DataTable().draw();
+            // })
+
+
+            // ------------------- slider ------------------------
+
+
+            // var inputLeft2 = document.getElementById("input-left-2");
+            // var inputRight2 = document.getElementById("input-right-2");
+
+            // var thumbLeft2 = document.querySelector(".slider-2 > div > .thumb-2.left");
+            // var thumbRight2 = document.querySelector(".slider-2 > div > .thumb-2.right");
+            // var range2 = document.querySelector(".slider-2 > div > .range-2");
+            // var signLeft2 = document.querySelector(".slider-2 > div > .sign-2.left");
+            // var signRight2 = document.querySelector(".slider-2 > div > .sign-2.right");
+            // var signValueLeft2 = document.querySelector(".slider-2 > div > .sign-2.left > span");
+            // var signValueRight2 = document.querySelector(".slider-2 > div > .sign-2.right > span");
+
+
+            // var currentLeftNumSemana = localStorage.getItem("currentLeftNumSemana");
+            // if (currentLeftNumSemana !== null) {
+
+            //     $('#input-left-2').val(currentLeftNumSemana);
+            //     console.log("currentLeftNumSemana = " + currentLeftNumSemana);
+            // };
+            // function setLeftValue2() {
+            //     var _this = inputLeft2,
+            //         min = parseInt(_this.min),
+            //         max = parseInt(_this.max);
+
+            //     _this.value = Math.min(parseInt(_this.value), parseInt(inputRight2.value));     //_this.value = Math.min(parseInt(_this.value), parseInt(inputRight2.value) - 1);
+            //     console.log("setLeftValue2 val = " + _this.value);
+
+            //     var percent = ((_this.value - min) / (max - min)) * 100;
+            //     console.log("setLeftValue2 percent = " + percent + "%");
+
+            //     thumbLeft2.style.left = percent + "%";
+            //     signLeft2.style.left = percent + "%";
+            //     signValueLeft2.innerHTML = _this.value;
+            //     range2.style.left = percent + "%";
+            //     range2.style.backgroundColor = $("#CorfundoPicker").val();
+
+            //     let currentLeftNumSemana = $('#input-left-2').val();
+            //     if (currentLeftNumSemana == null || currentLeftNumSemana == "") {
+            //         localStorage.removeItem("currentLeftNumSemana");
+            //     }
+            //     else
+            //     {
+            //         localStorage.setItem("currentLeftNumSemana", currentLeftNumSemana);
+            //     }
+
+            //     $('#vendaSemanalTable').DataTable().draw();
+            // }
+            // setLeftValue2();
+
+            // var currentRightNumSemana = localStorage.getItem("currentRightNumSemana");
+            // if (currentRightNumSemana !== null) {
+
+            //     $('#input-right-2').val(currentRightNumSemana);
+            //     console.log("currentRightNumSemana = " + currentRightNumSemana);
+            // };
+            // function setRightValue2() {
+            //     var _this = inputRight2,
+            //         min = parseInt(_this.min),
+            //         max = parseInt(_this.max);
+
+            //     _this.value = Math.max(parseInt(_this.value), parseInt(inputLeft2.value));      //_this.value = Math.max(parseInt(_this.value), parseInt(inputLeft2.value) + 1);
+            //     console.log("setRighttValue2 val=" + _this.value);
+
+            //     var percent = ((_this.value - min) / (max - min)) * 100;
+            //     console.log("setRightValue2 percent = " + percent + "%");
+
+            //     thumbRight2.style.left = percent + "%";
+            //     signRight2.style.left = percent + "%";
+            //     signValueRight2.innerHTML = _this.value;
+            //     range2.style.right = (100 - percent) + "%";
+
+            //     let currentRightNumSemana = $('#input-right-2').val();
+            //     if (currentRightNumSemana == null || currentRightNumSemana == "") {
+            //         localStorage.removeItem("currentRightNumSemana");
+            //     }
+            //     else
+            //     {
+            //         localStorage.setItem("currentRightNumSemana", currentRightNumSemana);
+            //     }
+
+            //     $('#vendaSemanalTable').DataTable().draw();
+            // }
+            // setRightValue2();
+
+
+            // inputLeft2.addEventListener("input", setLeftValue2);
+            // inputRight2.addEventListener("input", setRightValue2);
+
+            // inputLeft2.addEventListener("mousedown", function () {
+            //     thumbLeft2.classList.add("active");
+            // });
+            // inputLeft2.addEventListener("mouseup", function () {
+            //     thumbLeft2.classList.remove("active");
+            // });
+
+            // inputRight2.addEventListener("mousedown", function () {
+            //     thumbRight2.classList.add("active");
+            // });
+            // inputRight2.addEventListener("mouseup", function () {
+            //     thumbRight2.classList.remove("active");
+            // });
+
+
+            // ------------------- vendaTable ------------------------
+
+
+            LoadAllEmpresas_index();
+            LoadAllMercados_index();
+            $("#vendaSemanalTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+
+        });
+
+    </script>
+}

@@ -1,0 +1,119 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using LVLgroupApp.Areas.Admin.Models
+@model AuditLogViewModel
+
+@{
+    ViewData["Title"] = localizer["Logs de auditoria"];
+    ViewData["Caption"] = localizer["Atividade da aplicação"];
+}
+
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        <div class="row">
+            <div class="col-sm-4">
+                <a id="reload" class="btn btn-primary text-white mb-3">
+                    <i class="fa fas fa-bolt"></i>
+                    @localizer["Recarregar"]
+                </a>
+                <a id="cleanold" class="btn btn-primary text-white mb-3">
+                    <i class="fa fas fa-trash"></i>
+                    @localizer["Remover logs antigos"]
+                </a>
+            </div>
+            <div class="col-sm-8">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-floating mb-3">
+                            <input id="startDate" type="text" class="form-control" placeholder="name@example.com">
+                            <label class="col-form-label" for="startDate">@localizer["Desde"]</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-floating mb-3">
+                            <input id="endDate" type="text" class="form-control" placeholder="name@example.com">
+                            <label class="col-form-label" for="endDate">@localizer["Até"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+
+        function loadData() {
+            $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+            $.busyLoadFull("show");
+            $('#viewAll').load('/admin/auditlog/LoadAll');
+        }
+
+        $(document).ready(function () {
+
+            let startDate = document.getElementById('startDate')
+            let endDate = document.getElementById('endDate')
+
+            startDate.addEventListener('change', (e) => {
+                let startDateVal = e.target.value;
+                $('#auditlogTable').DataTable().draw();
+            })
+
+            endDate.addEventListener('change', (e) => {
+                let endDateVal = e.target.value;
+                $('#auditlogTable').DataTable().draw();
+            })
+
+            $('#startDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+            $('#endDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+
+            $('#cleanold').on('click', function () {
+                //alert("cleanold");
+                $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+                $.busyLoadFull("show");
+                var _url = "/admin/auditlog/OnPostClean";
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: _url,
+                        processData: false,
+                        contentType: false,
+                        success: function (data) {
+                            if (data.status == "success") {
+                                alert('@localizer["Todos os logs com mais de 6 meses foram removidos com sucesso."]');
+                                loadData();
+                            }
+                        },
+                        error: function () {
+                            alert("Error occurs");
+                            loadData();
+                        }
+                    }
+                );
+
+            });
+        });
+
+    </script>
+}

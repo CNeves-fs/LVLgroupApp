@@ -1,0 +1,394 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.QuestionOption
+@using LVLgroupApp.Areas.Report.Models.QuestionTemplate
+@model QuestionTemplateViewModel
+
+
+
+@{
+    var multChoise = QuestionTypeList.QTYPE_ESCOLHA_MULTIPLA;
+}
+
+
+<style>
+    #AddOptionsDropDown {
+        min-width: 500px;
+    }
+</style>
+
+
+
+
+
+<link href="~/css/dashboard.css" rel="stylesheet">
+
+
+
+<form id="create-form" method="post" asp-area="Report" asp-controller="QuestionTemplate" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
+
+
+
+    <!-- Tipo pergunta / Version /Relatórios / Data -->
+    <div class="row mt-3">
+        <div class="col-lg-6 col-12">
+            <div class="input-group btn-group">
+                <span class="input-group-text font-weight-bold"><i class="fas fa-question-circle" style="font-size: 20px;"></i></span>
+                <div class="form-floating">
+                    <!-- Edit or Create Mode -->
+                    @if (Model.EditMode)
+                    {
+                        <select name="QuestionTypeId" class="form-select" id="QuestionTypeId" asp-for="QuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]' disabled>
+                        </select>
+                    }
+                    else
+                    {
+                        <select name="QuestionTypeId" class="form-select" id="QuestionTypeId" asp-for="QuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]'>
+                        </select>
+                    }
+                    <label class="col-form-label" for="SelectQuestionTypeId">@localizer["Tipo"]</label>
+                </div>
+                <div class="form-floating">
+                    <input id="CreatedAt" name="CreatedAt" type="text" class="form-control" asp-for="CreatedAt" value="@Model.CreatedAt.ToShortDateString()" readonly>
+                    <label class="col-form-label" for="CreatedAt">@localizer["Criada em"]</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-12">
+            <div class="input-group btn-group">
+                <span class="input-group-text font-weight-bold"><i class="fas fa-question-circle" style="font-size: 20px;"></i></span>
+                <div class="form-floating">
+                    <input id="UsedInReports" name="UsedInReports" type="number" step="1" class="form-control" asp-for="@Model.UsedInReports" value="@Model.UsedInReports" readonly>
+                    <label class="col-form-label" for="UsedInReports">@localizer["Relatórios"]</label>
+                </div>
+                <div class="form-floating">
+                    <input id="Version" name="Version" type="number" step="1" class="form-control" asp-for="@Model.Version" value="@Model.Version" readonly>
+                    <label class="col-form-label" for="Version">@localizer["Versão"]</label>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="AddOptionsButton" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        @localizer["Adicionar Opções"]
+                    </button>
+                    <div id="AddOptionsDropDown" class="dropdown-menu dropdown-menu-end p-2">
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input id="PtOptionText" name="PtOptionText" type="text" class="form-control" />
+                                    <label class="col-form-label" for="PtOptionText">@localizer["[pt]"]</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input id="EsOptionText" name="EsOptionText" type="text" class="form-control" />
+                                    <label class="col-form-label" for="EsOptionText">@localizer["[es]"]</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input id="EnOptionText" name="EnOptionText" type="text" class="form-control" />
+                                    <label class="col-form-label" for="EnOptionText">@localizer["[en]"]</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button id="addRow" type="button" class="btn btn-info">
+                                    <i class="fa fa-plus"></i> @localizer["Adicionar Opção"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Texto Pergunta -->
+    <!-- Traduções -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="form-floating">
+                <textarea id="QuestionText" name="QuestionText" type="text" class="form-control" asp-for="@Model.QuestionText" rows="1"></textarea>
+                <label class="col-form-label" for="QuestionText">@localizer["Pergunta [pt]"]</label>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="form-floating">
+                <textarea id="EsQuestionText" name="EsQuestionText" type="text" class="form-control" asp-for="@Model.EsQuestionText" rows="1"></textarea>
+                <label class="col-form-label" for="EsQuestionText">@localizer["Pergunta [es]"]</label>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="form-floating">
+                <textarea id="EnQuestionText" name="EnQuestionText" type="text" class="form-control" asp-for="@Model.EnQuestionText" rows="1"></textarea>
+                <label class="col-form-label" for="EnQuestionText">@localizer["Pergunta [en]"]</label>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="OptionsContainer">
+        <!--card de suporte da tabela Top de opções possíveis da resposta-->
+        <div class="card card-table">
+            <div class="card-header p-0 position-relative mt-3 mx-3 z-index-2">
+                <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <h6 class="table-title text-black ps-3">@localizer["Opções da resposta"]</h6>
+                </div>
+            </div>
+            <div class="card-body p-0 pb-2">
+                <div class="table-responsive p-2">
+                    <table id="TableEscolhasMultiplas" class="table align-items-center dt-responsive nowrap display hover mb-0" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                @* <th class="text-start"></th> *@
+                                <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">@localizer["Ordem"]</th>
+                                <th></th>
+                                <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["[pt]"]</th>
+                                <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["[es]"]</th>
+                                <th class="text-start text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["[en]"]</th>
+                                <th class="text-end text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">@localizer["Remover"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+
+                            @for (var i = 0; i < Model.Options.Count; i++)
+                            {
+                                <tr>
+                                    @* <td></td> *@
+                                    <td class="text-start">
+                                        @Model.Options[@i].Order
+                                    </td>
+                                    <td class="text-center">
+                                        @Model.Options[@i].OptionText_pt
+                                    </td>
+                                    <td class="text-center">
+                                        @Model.Options[@i].OptionText_es"
+                                    </td>
+                                    <td class="text-center">
+                                        @Model.Options[@i].OptionText_en
+                                    </td>
+                                    <td class="text-end">
+                                        <!-- Botão de remover -->
+                                        <button type="button" class="btn btn-danger btn-sm remove-option"><i class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <br/>
+
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+
+
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    $("#create-form").removeData("validator");
+
+
+    $("#create-form").validate({
+        rules: {
+            QuestionText: {
+                required: true
+            },
+            EsQuestionText: {
+                required: true
+            },
+            EnQuestionText: {
+                required: true
+            },
+        },
+        errorElement: "div",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback");
+            error.insertAfter(element);
+        },
+        highlight: function (element) {
+            $(element).removeClass('is-valid').addClass('is-invalid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        if ($("#QuestionTypeId").val() == @multChoise) {
+            alert('QuestionTypeId = ' + _typeId);
+            $('#OptionsContainer').show();
+            $("#AddOptionsButton").prop("disabled", false);
+        }
+        else {
+            $('#OptionsContainer').hide();
+            $("#AddOptionsButton").prop("disabled", true);
+        }
+
+        document.querySelector('#addRow').addEventListener('click', addNewRow);
+
+        const tableOptions = $("#TableEscolhasMultiplas").DataTable({
+            lengthChange: false,
+            searching: false,
+            bInfo: false,
+            paging: false,
+            rowReorder:  {
+                selector: 'tr'
+            },
+            language: {
+                url: _language
+            },
+            columns: [
+                {"width": "50", "className": 'reorder'},
+                {"orderable": false, "searchable": false},
+                {"orderable": false, "searchable": false, "className": 'dt-body-left'},
+                {"orderable": false, "searchable": false, "className": 'dt-body-left'},
+                {"orderable": false, "searchable": false, "className": 'dt-body-left'},
+                {"orderable": false, "searchable": false, "className": 'dt-body-right'}
+            ]
+        });
+
+
+
+        tableOptions.on('row-reorder', function(e, diff, edit) {
+            console.log('row-reorder');
+
+            // Atualiza os índices dos inputs para o binding do ASP.NET Core
+            updateOptionIndexes();
+        });
+
+
+
+        $("#QuestionTypeId").on("change", function () {
+        
+            let _typeId =  $("#QuestionTypeId").val();
+            //alert('TypeId changed = ' + _typeId);
+            if (_typeId == @multChoise) {
+                //alert('QuestionTypeId = ' + _typeId);
+                $('#OptionsContainer').show( 1000 );
+                $("#AddOptionsButton").prop("disabled", false);
+            }
+            else {
+                $('#OptionsContainer').hide( "slow" );
+                $("#AddOptionsButton").prop("disabled", true);
+            }
+        });
+
+
+
+        // função para atualizar os índices dos names dos inputs
+        function updateOptionIndexes() {
+            $('#TableEscolhasMultiplas tbody tr').each(function(index) {
+                console.log("index =" + index);
+                $(this).find('input, select, textarea').each(function() {
+                    var name = $(this).attr('name');
+                    console.log("name =" + name);
+                    if (name) { 
+                        // Atualiza o índice no nome do input
+                        var newName = name.replace(/Options\[\d+\]/, 'Options[' + index + ']');
+                        console.log("index2 =" + index);
+                        console.log("newname =" + newName);
+
+                        $(this).attr('name', newName);
+
+                        // Atualiza o valor da ordem
+                        if (newName.includes('Order')) {
+                            $(this).val(index); // Atualiza o valor da ordem);
+                            console.log("Order = " + $(this).val());
+                        }
+                    }
+                });
+            });
+        }
+
+
+
+
+        function addNewRow() {
+            //alert("addNewRow");
+
+            // Obter valores dos inputs do dropdown
+            let pt = $('#PtOptionText').val();
+            let es = $('#EsOptionText').val();
+            let en = $('#EnOptionText').val();
+
+            let table = $('#TableEscolhasMultiplas').DataTable();
+            //table.rowReorder.enable(false);
+
+            // O índice será o número de linhas após adicionar
+            let idx = table.rows().count();
+            console.log("addNewRow idx=" + idx);
+
+
+            // Criar a nova linha de data
+            let rowData = [
+              idx + 1,
+              `<input type="number" name="Options[${idx}].Order" class="form-control" value="${idx + 1}" hidden/>`,
+              `<input type="text" name="Options[${idx}].OptionText_pt" class="form-control" value="${pt}" />`,
+              `<input type="text" name="Options[${idx}].OptionText_es" class="form-control" value="${es}" />`,
+              `<input type="text" name="Options[${idx}].OptionText_en" class="form-control" value="${en}" />`,
+              `<button type="button" class="btn btn-danger"><span class="fas fa-trash"></span></button>`
+            ]
+
+
+            // Adiciona a linha via DataTables
+            table.row.add(rowData).draw(false);
+
+
+            // Limpar os campos do dropdown
+            $('#PtOptionText').val('');
+            $('#EsOptionText').val('');
+            $('#EnOptionText').val('');
+
+
+            // Atualizar os índices dos inputs (caso haja reordenação/remover)
+            updateOptionIndexes();
+        }
+
+    });
+
+</script>

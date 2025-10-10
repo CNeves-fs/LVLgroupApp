@@ -1,0 +1,57 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Tipos de Ocorrências"];
+    ViewData["Caption"] = localizer["Configure aqui os seus tipos de ocorrências."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Ocorrencia.Models.TipoOcorrencia
+@model TipoOcorrenciaViewModel
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        <div class="row">
+            <div class="col-sm-4">
+                @if ((AuthorizationService.AuthorizeAsync(User, Permissions.TiposOcorrencias.Create)).Result.Succeeded)
+                {
+                    <a onclick="jQueryModalGet('/ocorrencia/tipoocorrencia/OnGetCreateOrEdit','@localizer["Criar Tipo de ocorrência"]', event, 'modal-lg')" class="btn btn-success mb-5">
+                        <i class="fa fa-plus-square"></i> @localizer["Criar"]
+                    </a>
+                }
+
+                <a id="reload" class="btn btn-primary text-white mb-5">
+                    <i class="fa fas fa-bolt"></i>
+                    @localizer["Recarregar"]
+                </a>
+            </div>
+            <div class="col-sm-8">
+                <div class="row">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+@section Scripts
+{
+
+    <script>
+
+        function loadData() {
+            $('#viewAll').load('/ocorrencia/tipoocorrencia/LoadAll');
+        }
+
+        $(document).ready(function () {
+
+            $("#tipoocorrenciaTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+        });
+
+    </script>
+}

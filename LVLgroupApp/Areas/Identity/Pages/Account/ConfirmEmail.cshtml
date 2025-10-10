@@ -1,0 +1,73 @@
+﻿@page
+
+@using LVLgroupApp.Views.Shared.Components.HeaderPage;
+@using LVLgroupApp.Views.Shared.Components.Footer;
+@using LVLgroupApp.Views.Shared.Components.Theme;
+
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = @localizer["Email Confirmed"];
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>@ViewData["Title"]</title>
+    <partial name="_Styles" />
+</head>
+
+<body>
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>
+        <div class="loader-section"></div>
+    </div>
+
+    <div class="wrapper d-flex flex-column min-vh-100">
+        @(await Component.InvokeAsync<HeaderPageViewComponent>())
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="text-center">
+                    <h1 class="h4 text-gray-900 mt-5">@localizer["Email Confirmed"]</h1>
+                </div>
+                <div class="col-xl-10 col-lg-12 col-md-9">
+                    <div class="card border-0">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-1 d-lg-block text-center">
+                                </div>
+                                <div class="col-lg-10 d-lg-block text-center">
+                                    <div style="padding-top:3rem !important;">
+                                        <hr />
+@*                                        <p>@localizer["O seu email está confirmado. Por favor contate o administrador do portal para ativar a sua conta."]</p>
+                                        <hr/>
+                                        <p>@localizer["Su identificación de correo está confirmada. Por favor, póngase en contacto con el administrador del portal para activar su cuenta."]</p>
+                                        <hr />*@
+                                        <p>@localizer["Your email is confirmed. Please, contact the portal administrator to activate your account."]</p>
+                                        <hr />
+                                        <a type="button" asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">@localizer["Sign In"]</a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 d-none d-lg-block text-center">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @(await Component.InvokeAsync<ThemeViewComponent>())
+        @(await Component.InvokeAsync<FooterViewComponent>())
+    </div>
+
+    <partial name="_Scripts" />
+    @await Component.InvokeAsync("Notyf")
+</body>
+</html>

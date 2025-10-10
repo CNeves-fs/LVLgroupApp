@@ -1,0 +1,152 @@
+﻿@using Core.Enums
+@using Infrastructure.Data;
+@using LVLgroupApp.Areas.Business.Controllers.Empresa
+@using LVLgroupApp.Views.Shared.Components.Culture;
+@using MediatR
+@using AutoMapper
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IHtmlLocalizer<SharedResource> localizer
+@inject IMediator mediator
+@inject IMapper mapper
+@{
+    var isAuthenticated = User.Identity.IsAuthenticated;
+    var isSuperAdmin = false;
+    var isAdmin = false;
+    var isRevisor = false;
+    var isBasic = false;
+    var isSupervisor = false;
+    var isGerenteLoja = false;
+    var isColaborador = false;
+    byte[] empresaLogo = null;
+
+
+    if (isAuthenticated)
+    {
+        var userId = UserManager.GetUserId(User);
+        var currentUser = await UserManager.FindByIdAsync(userId);
+
+        if (currentUser.EmpresaId != null)
+        {
+            empresaLogo = await EmpresaController.GetEmpresaLogoAsync((int)currentUser.EmpresaId, mapper, mediator);
+        }
+        isSuperAdmin = await UserManager.IsInRoleAsync(currentUser, Roles.SuperAdmin.ToString());
+        isAdmin = await UserManager.IsInRoleAsync(currentUser, Roles.Admin.ToString());
+        isRevisor = await UserManager.IsInRoleAsync(currentUser, Roles.Revisor.ToString());
+        isSupervisor = await UserManager.IsInRoleAsync(currentUser, Roles.Supervisor.ToString());
+        isGerenteLoja = await UserManager.IsInRoleAsync(currentUser, Roles.GerenteLoja.ToString());
+        isColaborador = await UserManager.IsInRoleAsync(currentUser, Roles.Colaborador.ToString());
+        isBasic = await UserManager.IsInRoleAsync(currentUser, Roles.Basic.ToString());
+    }
+}
+
+<!-- Navbar -->
+<nav id="navigationBar" class="navbar navbar-expand-lg bg-body-tertiary fixed-top border-bottom py-0">
+    <div class="container-fluid py-0 pe-lg-5">
+
+        @{
+            if(isSuperAdmin || isAdmin || isRevisor || isSupervisor || isGerenteLoja || isColaborador)
+            {
+                <!-- offcanvas trigger -->
+                <button class="navbar-toggler d-block ms-lg-0 ms-0"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#sidebar"
+                        aria-controls="offcanvasExample">
+                    <span class="navbar-toggler-icon" data-bs-target="#sidebar"></span>
+                </button>
+                <!-- offcanvas trigger -->
+            }
+        }
+
+        <!-- brand -->
+        <a class="navbar-brand me-auto ms-lg-2 ms-2 px-4" href="/">
+            @{
+                if (isSuperAdmin || isAdmin || isRevisor || empresaLogo == null)
+                {
+                    <img id="header-logo" src="~/images/logo-lvl-dark.png" alt="LVL Logo" style="width:140px;">
+                }
+                else
+                {
+                    <img src="data:image/*;base64,@(Convert.ToBase64String(empresaLogo))" style="width:140px;" class="float-start">
+                }
+            }
+        </a>
+        <!-- brand -->
+
+        <!-- collapse trigger -->
+        <button class="navbar-toggler ms-lg-0 ms-3"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#topNavBar"
+                aria-controls="topNavBar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- collapse trigger -->
+
+        <!-- collapseble navbar -->
+        <div class="collapse navbar-collapse" id="topNavBar">
+            <!-- <span class="navbar-text fw-bold fs-3 mr-4">@localizer["Portal de reclamações"]</span> -->
+            <form class="d-flex ms-auto py-2" method="post" role="form">
+                <button class="btn btn-primary me-3" type="submit" asp-area="Ocorrencia" asp-controller="Ocorrencia" asp-action="Index">@localizer["Atividade em Loja"]</button>
+                <button class="btn btn-primary" type="submit" asp-area="Claim" asp-controller="Claim" asp-action="Index">@localizer["Reclamações"]</button>
+            </form>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    @(await Component.InvokeAsync<CultureViewComponent>())
+                </li>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="margin-top: 2px; padding-left: 0;">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small"> @UserManager.GetUserAsync(User).Result.FirstName @UserManager.GetUserAsync(User).Result.LastName</span>
+                            @if (UserManager.GetUserAsync(User).Result.ProfilePicture != null)
+                            {
+                                <img class="img-profile rounded-circle" style="object-fit: cover; width: 40px; height: 40px;" src="data:image/*;base64,@(Convert.ToBase64String(UserManager.GetUserAsync(User).Result.ProfilePicture))">
+                            }
+                            else
+                            {
+                                <img class="img-profile rounded-circle" style="object-fit: cover; width: 40px; height: 40px;" src="~/images/default-user.png">
+                            }
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" asp-area="Identity" asp-page="/Profile" asp-route-userId="@UserManager.GetUserId(User)">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                @localizer["Definições"]
+                            </a>
+                            @if (!isBasic)
+                            {
+                                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" asp-route-userId="@UserManager.GetUserId(User)">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    @localizer["Perfil"]
+                                </a>
+                            
+                                <a id="enviarNotificacao" class="dropdown-item" onclick="jQueryModalGet('/notification/mynotification/OnGetCreate','@localizer["Enviar notificação"]', event, 'modal-xl')">
+                                    <i class="fas fa-bell fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    @localizer["Enviar Notificação"]
+                                </a>
+                            }
+                            <div class="dropdown-divider"></div>
+
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                @localizer["Terminar sessão"]
+                            </a>
+                        </div>
+                    </li>
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="notificationPopover" tabindex="0" role="button" data-bs-container="body" data-toggle="popover" data-bs-placement="bottom"></a>
+                    </li>
+                }
+            </ul>
+        </div>
+        <!-- collapseble navbar -->
+
+    </div>
+</nav>
+<!-- Navbar -->

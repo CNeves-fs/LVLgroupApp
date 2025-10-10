@@ -1,0 +1,557 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@inject UserManager<ApplicationUser> UserManager
+@using Core.Constants
+@using Core.Entities.Identity;
+@using LVLgroupApp.Areas.Ocorrencia.Models.Ocorrencia
+
+<table id="ocorrenciaTable" class="table table-striped dt-responsive nowrap display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["Empresa"]</th>
+            <th>@localizer["Código"]</th>
+            <th>@localizer["Categoria"]</th>
+            <th>@localizer["Status"]</th>
+            <th>@localizer["Ocorrência"]</th>
+            <th>@localizer["Loja"]</th>
+            <th>@localizer["Grupo Lojas"]</th>
+            <th>@localizer["Mercado"]</th>
+            <th>@localizer["Ações"]</th>
+        </tr>
+    </thead>
+</table>
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+
+        var options = {
+            isEnabled: true,
+            saveState: true
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        if ($.fn.dataTable.isDataTable('#ocorrenciaTable')) {
+            $('#ocorrenciaTable').DataTable().clear();
+            $('#ocorrenciaTable').DataTable().destroy();
+        }
+
+        var table = $("#ocorrenciaTable").DataTable({
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            serverSide: true,
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            destroy: true,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            lengthMenu: [
+                [20, 50, 100, 500, 1000, -1],
+                [20, 50, 100, 500, 1000, '@localizer["Todos"]'],
+            ],
+            ajax: {
+                url: "/Ocorrencia/Ocorrencia/GetOcorrencias",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    d.mercadofilter = GetMercadoFilterValue();
+                    d.empresafilter = GetEmpresaFilterValue();
+                    d.grupolojafilter = GetGrupolojaFilterValue();
+                    d.lojafilter = LojaFilterValue();
+
+                    console.log("filter = " + d.mercadofilter + " - " + d.empresafilter + " - " + d.grupolojafilter + " - " + d.lojafilter);
+
+                    d.filterOption =  $("#CalendarOption").val();
+
+                    // d.desdedateFilter = GetStartDateFilterValue();
+                    // d.atedateFilter = GetEndDateFilterValue();
+                    d.desdeSemanaFilter = GetStartSemanaFilterValue();
+                    d.ateSemanaFilter = GetEndSemanaFilterValue();
+
+                    d.janeiroFilter = GetJaneiroFilterValue();
+                    d.fevereiroFilter = GetFevereiroFilterValue();
+                    d.marçoFilter = GetMarçoFilterValue();
+                    d.abrilFilter = GetAbrilFilterValue();
+                    d.maioFilter = GetMaioFilterValue();
+                    d.junhoFilter = GetJunhoFilterValue();
+                    d.julhoFilter = GetJulhoFilterValue();
+                    d.agostoFilter = GetAgostoFilterValue();
+                    d.setembroFilter = GetSetembroFilterValue();
+                    d.outubroFilter = GetOutubroFilterValue();
+                    d.novembroFilter = GetNovembroFilterValue();
+                    d.dezembroFilter = GetDezembroFilterValue();
+
+                    d.quarter1Filter = GetQuarter1FilterValue();
+                    d.quarter2Filter = GetQuarter2FilterValue();
+                    d.quarter3Filter = GetQuarter3FilterValue();
+                    d.quarter4Filter = GetQuarter4FilterValue();
+
+                    d.ano1Filter = GetAno1FilterValue();
+                    d.ano2Filter = GetAno2FilterValue();
+                    d.ano3Filter = GetAno3FilterValue();
+                    d.ano4Filter = GetAno4FilterValue();
+                    d.ano5Filter = GetAno5FilterValue();
+                    d.ano6Filter = GetAno6FilterValue();
+
+                    str = JSON.stringify(d, null, 4); // (Optional) beautiful indented output.
+                    console.log(str); // Logs output to dev tools console.
+                }
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de ocorrências"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de ocorrências"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        })
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de ocorrências"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de ocorrências"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>'
+                }
+            ],
+            columnDefs: [
+                { 
+                    visible: false, targets: [0, 6, 7, 8] 
+                },
+                {
+                    className: 'dt-body-center', targets: [6, 7, 8]
+                },
+                {
+                    orderable: false, targets: [6, 7, 8, 9]
+                },
+                {
+                    orderData: [0, 2], targets: [0]
+                },
+                {
+                    orderData: [2, 0], targets: [2]
+                },
+                {
+                    orderData: [5, 0], targets: [5]
+                }
+                // {
+                //     orderSequence: ['desc'], targets: [0]
+                // }
+            ],
+            order: [[0, 'desc']],
+            columns: [
+                { data: "id", name: "Id", autoWidth: true },
+                {
+                    data: "empresaLogo",
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log(data.length); // Logs output to dev tools console.
+                        if (data != null && data.length > 0) return `<div class="row">
+                                <div class="col-sm text-center">
+                                        <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="data:image/*;base64,${data}">
+                                </div>
+                            </div>`;
+                        return `<div class="row">
+                                        <div class="col-sm text-center">
+                                            <img class="toprint" style="display:block; width:100%; height:auto; max-width: 80px;" src="/images/no-image-icon.png">
+                                        </div>
+                                    </div>`;
+                    }
+                },
+                { data: "codeId", name: "CodeId", autoWidth: true },
+                { data: "categoriaNome", name: "CategoriaNome", autoWidth: true },
+                { data: "statusNome", name: "StatusNome", autoWidth: true },
+                { data: "ocorrenciaNome", name: "OcorrenciaNome", autoWidth: true },
+                { data: "lojaNome", name: "LojaNome", autoWidth: true },
+                { data: "grupolojaNome", name: "GrupoLojaNome", autoWidth: true },
+                { data: "mercadoNome", name: "MercadoNome", autoWidth: true },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `<div class="btn-group dropend">
+                                        <button id="dropdown_${data}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            @localizer["Ação"]
+                                        </button>
+                                            <div class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_${data}">
+                                            <a class="dropdown-item" onclick="jQueryModalGet('/Ocorrencia/Ocorrencia/OnGetCreateOrEdit?id=${data}', '@localizer["Editar ocorrência"]', event, 'modal-xl')"><i class="fas fa-pencil-alt"></i> @localizer["Editar"]</a>
+                                            <form id="form_delete_${data}" action="/Ocorrencia/Ocorrencia/OnPostDelete?id=${data}" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover esta ocorrência?"]')">
+                                                <a class="dropdown-item" href="javascript:$('#form_delete_${data}').submit();"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                            </form>
+                                        </div>
+                                    </div>`;
+                    }
+                }
+            ]
+        });
+
+        $('#ocorrenciaTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible'); 
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $('#ocorrenciaTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+
+        $('#ocorrenciaTable tbody').on('dblclick', 'tr', function () {
+            $(this).addClass('selected');
+            let dataRow = table.row(this).data();
+            str = JSON.stringify(dataRow, null, 4); // (Optional) beautiful indented output.
+            console.log(str); // Logs output to dev tools console.
+            //alert('You clicked on ' + dataRow.id + '\'s row');
+            jQueryModalGet('/Ocorrencia/Ocorrencia/OnGetCreateOrEdit?id=' + dataRow.id, '@localizer["Editar ocorrência"]', event, 'modal-xl')
+        });
+        $("#ocorrenciaTable").on('draw.dt', function () {
+            setTimeout(function () {
+                table.columns.adjust();
+                console.log("colums adjusted....");
+            }, 200);
+        });
+
+    });
+
+
+    function GetMercadoFilterValue() {
+        var MercadoFilterValue = $('#MercadoId_index').val();
+        console.log("MercadoFilterValue = " + MercadoFilterValue);
+        if (MercadoFilterValue == null || MercadoFilterValue == "") {
+            return "0";
+        }
+        else {
+            return MercadoFilterValue;
+        }
+    };
+    function GetEmpresaFilterValue() {
+        var EmpresaFilterValue = $('#EmpresaId_index').val();
+        console.log("EmpresaFilterValue = " + EmpresaFilterValue);
+        if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+            return "0";
+        }
+        else {
+            return EmpresaFilterValue;
+        }
+    };
+    function GetGrupolojaFilterValue() {
+        var GrupolojaFilterValue = $('#GrupolojaId_index').val();
+        console.log("GrupolojaFilterValue = " + GrupolojaFilterValue);
+        if (GrupolojaFilterValue == null || GrupolojaFilterValue == "") {
+            return "0";
+        }
+        else {
+            return GrupolojaFilterValue;
+        }
+    };
+    function LojaFilterValue() {
+        var LojaFilterValue = $('#LojaId_index').val();
+        console.log("LojaFilterValue = " + LojaFilterValue);
+        if (LojaFilterValue == null || LojaFilterValue == "") {
+            return "0";
+        }
+        else {
+            return LojaFilterValue;
+        }
+    };
+    function GetStartDateFilterValue() {
+        if (document.querySelector("#rangeDate_index")._flatpickr.input.disabled == true) return "";
+        let currentRangeDateVal = $('#rangeDate_index').val();
+        const strArray = currentRangeDateVal.split(" ");
+        return strArray[0];
+    };
+    function GetEndDateFilterValue() {
+        if (document.querySelector("#rangeDate_index")._flatpickr.input.disabled == true) return "";
+        let currentRangeDateVal = $('#rangeDate_index').val();
+        const strArray = currentRangeDateVal.split(" ");
+        return strArray[2];
+    };
+    function GetStartSemanaFilterValue() {
+        if (document.querySelector("#FromSemana").disabled == true) return "";
+        return $("#FromSemana").val();
+
+    };
+    function GetEndSemanaFilterValue() {
+        if (document.querySelector("#ToSemana").disabled == true) return "";
+        return $("#ToSemana").val();
+    };
+
+    function GetJaneiroFilterValue() {
+        let elem = document.querySelector("#btncheck_Jan");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetFevereiroFilterValue() {
+        let elem = document.querySelector("#btncheck_Fev");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetMarçoFilterValue() {
+        let elem = document.querySelector("#btncheck_Mar");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetAbrilFilterValue() {
+        let elem = document.querySelector("#btncheck_Abr");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetMaioFilterValue() {
+        let elem = document.querySelector("#btncheck_Mai");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetJunhoFilterValue() {
+        let elem = document.querySelector("#btncheck_Jun");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetJulhoFilterValue() {
+        let elem = document.querySelector("#btncheck_Jul");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetAgostoFilterValue() {
+        let elem = document.querySelector("#btncheck_Ago");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetSetembroFilterValue() {
+        let elem = document.querySelector("#btncheck_Set");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetOutubroFilterValue() {
+        let elem = document.querySelector("#btncheck_Out");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetNovembroFilterValue() {
+        let elem = document.querySelector("#btncheck_Nov");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetDezembroFilterValue() {
+        let elem = document.querySelector("#btncheck_Dez");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+
+    function GetQuarter1FilterValue() {
+        let elem = document.querySelector("#btncheck_Q1");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetQuarter2FilterValue() {
+        let elem = document.querySelector("#btncheck_Q2");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetQuarter3FilterValue() {
+        let elem = document.querySelector("#btncheck_Q3");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+    function GetQuarter4FilterValue() {
+        let elem = document.querySelector("#btncheck_Q4");
+        if (elem.disabled == true) return false;
+        return elem.checked;
+    };
+
+    function GetAno1FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 0 do array se existir
+        if (checkboxesChecked.length > 0) return checkboxesChecked[0];
+        return "";
+    };
+    function GetAno2FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 1 do array se existir
+        if (checkboxesChecked.length > 1) return checkboxesChecked[1];
+        return "";
+    };
+    function GetAno3FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 2 do array se existir
+        if (checkboxesChecked.length > 2) return checkboxesChecked[2];
+        return "";
+    };
+    function GetAno4FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 3 do array se existir
+        if (checkboxesChecked.length > 3) return checkboxesChecked[3];
+        return "";
+    };
+    function GetAno5FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 4 do array se existir
+        if (checkboxesChecked.length > 4) return checkboxesChecked[4];
+        return "";
+    };
+    function GetAno6FilterValue() {
+        let checkboxes = document.querySelectorAll('[id^="btncheck_20"]');
+        let checkboxesChecked = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if ((checkboxes[i].disabled == false) && (checkboxes[i].checked)) {
+                let strId = checkboxes[i].id;
+                let strFilter = strId.split(/[_]+/).pop();
+
+                checkboxesChecked.push(strFilter);
+                console.log(strFilter);
+            }
+        }
+        // return posição 5 do array se existir
+        if (checkboxesChecked.length > 5) return checkboxesChecked[5];
+        return "";
+    };
+
+    var logo = getLVLlogo('logo-lvl-dark.png');
+
+    function getLVLlogo(logoName) {
+
+        let _logoName = logoName;
+        let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+        let formData = new FormData();
+        formData.append("logoName", _logoName);
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        logo = data.logoBase64;
+                        //alert(logo);
+                    }
+                },
+                error: function () {
+                    alert("getLVLlogo: Error occurs");
+                }
+            }
+        );
+
+    };
+
+</script>

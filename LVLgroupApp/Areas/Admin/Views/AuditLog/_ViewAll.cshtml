@@ -1,0 +1,238 @@
+﻿@using LVLgroupApp.Areas.Admin.Models
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model AuditLogViewModel
+
+
+<table id="auditlogTable" class="table table-striped nowrap dt-responsive display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["Data"]</th>
+            <th>@localizer["Ação"]</th>
+            <th>@localizer["Utilizador"]</th>
+            <th>@localizer["Email"]</th>
+            <th>@localizer["Tabela"]</th>
+            <th>@localizer["Chave primária"]</th>
+            <th>@localizer["Colunas afetadas"]</th>
+            <th>@localizer["Valores anteriores"]</th>
+            <th>@localizer["Novos valores"]</th>
+        </tr>
+    </thead>
+</table>
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+    $(document).ready(function () {
+
+        var userId = @Html.Raw(Json.Serialize(Model.UserId));
+        //alert(userId);
+
+        var logo = getLVLlogo('logo-lvl-dark.png');
+
+        var options = {
+            isEnabled: true,
+            saveState: false
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        var table = $("#auditlogTable").DataTable({
+            //dom: 'Bflrtip',
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                 "<'row'<'col-sm-12't>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            serverSide: true,
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            lengthMenu: [
+                [20, 50, 100, 500, 1000, -1],
+                [20, 50, 100, 500, 1000, '@localizer["Todos"]'],
+            ],
+            ajax: {
+                url: "/Admin/AuditLog/GetLogs",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    d.desdedateLog = $("#startDate").val();
+                    d.atedateLog = $("#endDate").val();
+                    d.userId = userId;
+                }
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de logs"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de logs"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de logs"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de logs"]'
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>',
+                }
+            ],
+            order: [[0, "desc"]],
+            columnDefs: [
+                {
+                    visible: false, targets: [3, 7, 8, 9]
+                },
+                {
+                    orderable: false, targets: [3, 7, 8, 9]
+                }
+            ],
+            columns: [
+                { data: "id", name: "Id" },
+                {   data: "dateTime",
+                    name: "DateTime",
+                    render: function (data) {
+                        var logDate = new Date(data);
+                        var strDate = logDate.toLocaleDateString('@localizer["pt-PT"]');
+                        var strTime = logDate.toLocaleTimeString('@localizer["pt-PT"]');
+                        return `<small class="badge text-bg-info"><i class="far fa-clock"></i> Local</small>
+                                <br>
+                                <span class="badge text-bg-info" style="padding-top: 5px;">${strDate} ${strTime}</span>`;
+                    }
+                },
+                { data: "type", name: "Type" },
+                { data: "userId", name: "UserId" },
+                { data: "email", name: "Email" },
+                { data: "tableName", name: "TableName" },
+                {   data: "primaryKey",
+                    name: "PrimaryKey",
+                    render: function (data) {
+                        return "<div class='text-wrap text-break' style='width: 100px'>" + data + "</div>";
+                    }
+                },
+                {   data: "affectedColumns",
+                    name: "AffectedColumns",
+                    render: function (data) {
+                        return "<div class='text-wrap text-break' style='width: 500px'>" + data + "</div>";
+                    }
+                },
+                {   data: "oldValues", 
+                    name: "OldValues", 
+                    render: function (data) {
+                        return "<div class='text-wrap text-break' style='width: 500px'>" + data + "</div>";
+                    }
+                },
+                {   data: "newValues",
+                    name: "NewValues", 
+                    render: function (data) {
+                        return "<div class='text-wrap text-break' style='width: 500px'>" + data + "</div>";
+                    }
+                }
+            ]
+        });
+
+        $('#auditlogTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $("#auditlogTable").on('draw.dt', function () {
+            setTimeout(function () {
+                table.columns.adjust();
+                console.log("colums adjusted....");
+            }, 200);
+        });
+
+        $('#auditlogTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+
+        function getLVLlogo(logoName) {
+
+            let _logoName = logoName;
+            let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+            let formData = new FormData();
+            formData.append("logoName", _logoName);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status == "success") {
+                            logo = data.logoBase64;
+                            //alert(logo);
+                        }
+                    },
+                    error: function () {
+                        alert("getLVLlogo: Error occurs");
+                    }
+                }
+            );
+        };
+
+    });
+</script>
