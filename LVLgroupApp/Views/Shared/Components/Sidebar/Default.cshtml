@@ -341,7 +341,7 @@
                     if (isSuperAdmin || isAdmin || isSupervisor || isRevisor || isGerenteLoja || isColaborador)
                     {
                         <li>
-                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#dashboard">
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#reports">
                                 <span class="me-2"><i class="nav-icon ion ion-ios-create" style="font-size: 20px;"></i></span>
                                 <span>@localizer["Relatórios"]</span>
                                 <span class="ms-auto">
@@ -350,10 +350,10 @@
                                     </span>
                                 </span>
                             </a>
-                            <div class="collapse in sidebar-collapse" id="dashboard">
+                            <div class="collapse in sidebar-collapse" id="reports">
                                 <ul class="navbar-nav ps-3">
                                     <li>
-                                        <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#DashboardVendas">
+                                        <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#QuestionTemplates">
                                             <span class="me-2"><i class="nav-icon fas fa-list-alt"></i></span>
                                             <span>@localizer["Modelos"]</span>
                                             <span class="ms-auto">
@@ -362,7 +362,7 @@
                                                 </span>
                                             </span>
                                         </a>
-                                        <div class="collapse in sidebar-collapse" id="DashboardVendas">
+                                        <div class="collapse in sidebar-collapse" id="QuestionTemplates">
                                             <ul class="navbar-nav ps-3">
                                                 <li>
                                                     <a asp-area="Report" asp-controller="QuestionTemplate" asp-action="Index" class="nav-link dropdown-item px-3">

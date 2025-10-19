@@ -59,7 +59,7 @@
     <div class="row mt-2">
         <div class="col-lg-3 col-6">
             <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" role="checkbox" id="ActiveIndex" name="ActiveIndex" onchange="toggleActive()" />
+                <input id="ActiveIndex" name="ActiveIndex" class="form-check-input" type="checkbox" role="checkbox" name="ActiveIndex" />
                 <label class="form-check-label" for="Active">@localizer["Apenas perguntas ativas"]</label>
             </div>
         </div>
@@ -94,19 +94,14 @@
                 $('#questionTemplateTable').DataTable().draw();
             });
 
-            function toggleActive() {
-                var _active = $('#ActiveIndex').is(':checked');
-                if (_active) {
-                    $('#ActiveIndex').val('true');
-                    $('#ActiveIndex').prop("checked", true);
-                    console.log("ActiveIndex foi marcada");
-                } else {
-                    $('#ActiveIndex').val('false');
-                    $('#ActiveIndex').prop("checked", false);
-                    console.log("ActiveIndex foi desmarcada");
-                }
+
+             $("#ActiveIndex").on("change", function () {
+                console.log("ActiveIndex foi clickada = " + $('#ActiveIndex').is(':checked'));
                 $('#questionTemplateTable').DataTable().draw();
-            }
+            });
+
+
+
 
             loadData();
 

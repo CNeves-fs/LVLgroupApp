@@ -15,7 +15,7 @@ namespace Core.Features.QuestionOption.Commands.Create
 
         public int Id { get; set; }
 
-        public int QuestionOptionId { get; set; }
+        public int QuestionTemplateId { get; set; }
 
         public string OptionText_pt { get; set; }
 

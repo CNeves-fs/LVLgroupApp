@@ -13,9 +13,10 @@ namespace Core.Constants
 
         public const int QTYPE_NUMERICA = 1;
         public const int QTYPE_VERDADEIRO_FALSO = 2;
-        public const int QTYPE_TEXTO = 3;
-        public const int QTYPE_MONETARIO = 4;
-        public const int QTYPE_ESCOLHA_MULTIPLA = 5;
+        public const int QTYPE_SIM_NAO = 3;
+        public const int QTYPE_TEXTO = 4;
+        public const int QTYPE_MONETARIO = 5;
+        public const int QTYPE_ESCOLHA_MULTIPLA = 6;
 
 
         //---------------------------------------------------------------------------------------------------
@@ -25,6 +26,7 @@ namespace Core.Constants
         {
             new QuestionType() { Id = QTYPE_NUMERICA, Name = "Numérica" },
             new QuestionType() { Id = QTYPE_VERDADEIRO_FALSO, Name = "VerdadeiroOuFalso" },
+            new QuestionType() { Id = QTYPE_SIM_NAO, Name = "SimOuNao" },
             new QuestionType() { Id = QTYPE_TEXTO, Name = "Texto" },
             new QuestionType() { Id = QTYPE_MONETARIO, Name = "Monetária" },
             new QuestionType() { Id = QTYPE_ESCOLHA_MULTIPLA, Name = "EscolhaMultipla" }
@@ -38,8 +40,9 @@ namespace Core.Constants
         {
             new QuestionType() { Id = QTYPE_NUMERICA, Name = "Numérico" },
             new QuestionType() { Id = QTYPE_VERDADEIRO_FALSO, Name = "VerdaderoOFalso" },
+            new QuestionType() { Id = QTYPE_SIM_NAO, Name = "SiONo" },
             new QuestionType() { Id = QTYPE_TEXTO, Name = "Texto" },
-            new QuestionType() { Id = 4, Name = "Monetario" },
+            new QuestionType() { Id = QTYPE_MONETARIO, Name = "Monetario" },
             new QuestionType() { Id = QTYPE_ESCOLHA_MULTIPLA, Name = "OpciónMúltiple" }
         };
 
@@ -51,6 +54,7 @@ namespace Core.Constants
         {
             new QuestionType() { Id = QTYPE_NUMERICA, Name = "Numeric" },
             new QuestionType() { Id = QTYPE_VERDADEIRO_FALSO, Name = "TrueOrFalse" },
+            new QuestionType() { Id = QTYPE_SIM_NAO, Name = "YesOrNo" },
             new QuestionType() { Id = QTYPE_TEXTO, Name = "Text" },
             new QuestionType() { Id = QTYPE_MONETARIO, Name = "Monetary" },
             new QuestionType() { Id = QTYPE_ESCOLHA_MULTIPLA, Name = "MultipleChoice" }

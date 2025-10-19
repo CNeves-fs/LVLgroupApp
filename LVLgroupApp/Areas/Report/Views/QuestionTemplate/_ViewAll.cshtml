@@ -60,7 +60,7 @@
             $('#questionTemplateTable').DataTable().destroy();
         }
 
-        var tableQuestionTemplate = $("#questionTemplateTable").DataTable({
+        var table = $("#questionTemplateTable").DataTable({
             dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
                 "<'row'<'col-sm-12't>>" +
                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
@@ -176,23 +176,23 @@
                     render: function (data) {
                         //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
                         //console.log(str); // Logs output to dev tools console.
-                        return "<div class='text-wrap text-break' style='width: 200px'>" + data + "</div>";
+                        return "<div class='text-wrap text-break' style='width: 400px'>" + data + "</div>";
                     }
                 },
-                { data: "QuestionTypeName", name: "QuestionTypeName", autoWidth: true },
+                { data: "questionTypeName", name: "QuestionTypeName", autoWidth: true },
                 {
                     data: null,
                     name: "CreatedAt",
                     render: function (data, type, row) {
                         //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
-                        //console.log("cliente:" + str); // Logs output to dev tools console.
+                        //console.log("createdAt data:" + str); // Logs output to dev tools console.
                         var questionDate = new Date(data.createdAt);
                         var strDate = questionDate.toLocaleDateString('@localizer["pt-PT"]');
 
-                        var active = `<span class="badge text-bg-success" style="padding-top: 5px;">'@localizer["Ativa"]'</span>
-                                      <span class="badge text-bg-success" style="padding-top: 5px;">'@localizer["Version:"]' ${data.version}</span>`
-                        var noactive = `<span class="badge text-bg-warning" style="padding-top: 5px;">'@localizer["Inativa"]'</span>
-                                        <span class="badge text-bg-warning" style="padding-top: 5px;">'@localizer["Version:"]' ${data.version}</span>`
+                        var active = `<span class="badge text-bg-success" style="padding-top: 5px;">@localizer["Ativa"]</span>
+                                      <span class="badge text-bg-success" style="padding-top: 5px;">@localizer["Versão:"] ${data.version}</span>`
+                        var noactive = `<span class="badge text-bg-warning" style="padding-top: 5px;">@localizer["Inativa"]</span>
+                                        <span class="badge text-bg-warning" style="padding-top: 5px;">@localizer["Versão:"] ${data.version}</span>`
                         var strCreated = `<span class="badge text-bg-secondary" style="padding-top: 5px;">${strDate}</span>`
                         //console.log("contacted=" + JSON.stringify(contacted)); // Logs output to dev tools console.
 
@@ -255,8 +255,11 @@
         $('#questionTemplateTable tbody').on('dblclick', 'tr', function () {
             $(this).addClass('selected');
             var data = table.row(this).data();
-            //alert('You clicked on ' + data[0] + '\'s row');
-            jQueryModalGet('/report/questiontemplate/OnGetCreateOrEdit?id=' + data[0], '@localizer["Editar modelo de pergunta"]', event, 'modal-lg')
+
+            str = JSON.stringify(data, null, 4);        // (Optional) beautiful indented output.
+            console.log("row dblclicked: " + str);         // Logs output to dev tools console.
+
+            jQueryModalGet('/report/questiontemplate/OnGetCreateOrEdit?id=' + data.id, '@localizer["Editar modelo de pergunta"]', event, 'modal-xl')
         });
 
         function getLVLlogo(logoName) {

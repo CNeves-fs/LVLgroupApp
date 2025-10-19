@@ -27,7 +27,9 @@
 
 <form id="create-form" method="post" asp-area="Report" asp-controller="QuestionTemplate" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
 
-
+    <input id="QuestionTypeId" name="QuestionTypeId" type="text" class="form-control" asp-for="@Model.QuestionTypeId" value="@Model.QuestionTypeId" hidden>
+    <input id="Language" name="Language" type="text" class="form-control" asp-for="@Model.Language" value="@Model.Language" hidden>
+    <input class="form-check-input" type="checkbox" role="switch" id="IsActive" name="IsActive" asp-for="@Model.IsActive" value="@Model.IsActive" checked="@Model.IsActive" hidden/>
 
     <!-- Tipo pergunta / Version /Relatórios / Data -->
     <div class="row mt-3">
@@ -38,18 +40,18 @@
                     <!-- Edit or Create Mode -->
                     @if (Model.EditMode)
                     {
-                        <select name="QuestionTypeId" class="form-select" id="QuestionTypeId" asp-for="QuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]' disabled>
+                        <select name="SelectQuestionTypeId" class="form-select" id="SelectQuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]' disabled>
                         </select>
                     }
                     else
                     {
-                        <select name="QuestionTypeId" class="form-select" id="QuestionTypeId" asp-for="QuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]'>
+                        <select name="SelectQuestionTypeId" class="form-select" id="SelectQuestionTypeId" asp-items="@Model.QuestionTypes" data-placeholder='@localizer["Selecione um tipo de pergunta"]'>
                         </select>
                     }
                     <label class="col-form-label" for="SelectQuestionTypeId">@localizer["Tipo"]</label>
                 </div>
                 <div class="form-floating">
-                    <input id="CreatedAt" name="CreatedAt" type="text" class="form-control" asp-for="CreatedAt" value="@Model.CreatedAt.ToShortDateString()" readonly>
+                    <input id="CreatedAt" name="CreatedAt" type="text" class="form-control" asp-for="@Model.CreatedAt" value="@Model.CreatedAt.ToShortDateString()" readonly>
                     <label class="col-form-label" for="CreatedAt">@localizer["Criada em"]</label>
                 </div>
             </div>
@@ -163,23 +165,25 @@
 
                             @for (var i = 0; i < Model.Options.Count; i++)
                             {
-                                <tr>
-                                    @* <td></td> *@
-                                    <td class="text-start">
+                                <tr data-row-index="@i">
+                                    <td class="text-end">
                                         @Model.Options[@i].Order
                                     </td>
-                                    <td class="text-center">
-                                        @Model.Options[@i].OptionText_pt
+                                    <td>
+                                        <input type="number" name="Options[@i].Order" class="form-control" value="@Model.Options[i].Order" hidden />
                                     </td>
-                                    <td class="text-center">
-                                        @Model.Options[@i].OptionText_es"
+                                    <td class="text-start">
+                                        <input type="text" name="Options[@i].OptionText_pt" class="form-control" value="@Model.Options[i].OptionText_pt" />
                                     </td>
-                                    <td class="text-center">
-                                        @Model.Options[@i].OptionText_en
+                                    <td class="text-start">
+                                        <input type="text" name="Options[@i].OptionText_es" class="form-control" value="@Model.Options[i].OptionText_es" />
+                                    </td>
+                                    <td class="text-start">
+                                        <input type="text" name="Options[@i].OptionText_en" class="form-control" value="@Model.Options[i].OptionText_en" />
                                     </td>
                                     <td class="text-end">
                                         <!-- Botão de remover -->
-                                        <button type="button" class="btn btn-danger btn-sm remove-option"><i class="fa fa-trash"></i></button>
+                                        <button type="button" class="btn btn-danger delete-row"><span class="fas fa-trash"></span></button>
                                     </td>
                                 </tr>
                             }
@@ -255,12 +259,25 @@
 
         $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
 
+
+        let _active = $('#IsActive').is(':checked');
+        if (_active) {
+            console.log('IsActive checked');
+        } else {
+            console.log('IsActive NOT checked');
+        }
+
+
+
+
+
+
         var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
         var languageFile = '@localizer["Portuguese.json"]';
         var _language = languagePath + languageFile;
 
         if ($("#QuestionTypeId").val() == @multChoise) {
-            alert('QuestionTypeId = ' + _typeId);
+            console.log('QuestionTypeId = ' + $("#QuestionTypeId").val());
             $('#OptionsContainer').show();
             $("#AddOptionsButton").prop("disabled", false);
         }
@@ -277,7 +294,7 @@
             bInfo: false,
             paging: false,
             rowReorder:  {
-                selector: 'tr'
+                selector: 'td:nth-child(1)'
             },
             language: {
                 url: _language
@@ -303,10 +320,10 @@
 
 
 
-        $("#QuestionTypeId").on("change", function () {
-        
-            let _typeId =  $("#QuestionTypeId").val();
-            //alert('TypeId changed = ' + _typeId);
+        $("#SelectQuestionTypeId").on("change", function () {      
+            let _typeId =  $("#SelectQuestionTypeId").val();
+            $("#QuestionTypeId").val(_typeId);
+            console.log('TypeId changed = ' + $("#QuestionTypeId").val());
             if (_typeId == @multChoise) {
                 //alert('QuestionTypeId = ' + _typeId);
                 $('#OptionsContainer').show( 1000 );
@@ -323,27 +340,41 @@
         // função para atualizar os índices dos names dos inputs
         function updateOptionIndexes() {
             $('#TableEscolhasMultiplas tbody tr').each(function(index) {
-                console.log("index =" + index);
+                // console.log("index =" + index);
                 $(this).find('input, select, textarea').each(function() {
                     var name = $(this).attr('name');
-                    console.log("name =" + name);
+                    // console.log("name =" + name);
                     if (name) { 
                         // Atualiza o índice no nome do input
                         var newName = name.replace(/Options\[\d+\]/, 'Options[' + index + ']');
-                        console.log("index2 =" + index);
-                        console.log("newname =" + newName);
+                        // console.log("index2 =" + index);
+                        // console.log("newname =" + newName);
 
                         $(this).attr('name', newName);
 
                         // Atualiza o valor da ordem
                         if (newName.includes('Order')) {
                             $(this).val(index); // Atualiza o valor da ordem);
-                            console.log("Order = " + $(this).val());
+                            // console.log("Order = " + $(this).val());
                         }
                     }
                 });
             });
         }
+
+
+
+
+
+        // Handler para remover linha
+        $("#TableEscolhasMultiplas").on("click", ".delete-row", function () {
+
+            console.log('delete-row clicked');
+            $(this).closest("tr").remove();
+
+            // Atualizar os índices dos inputs para manter o binding correto
+            updateOptionIndexes();
+        });
 
 
 
@@ -371,7 +402,7 @@
               `<input type="text" name="Options[${idx}].OptionText_pt" class="form-control" value="${pt}" />`,
               `<input type="text" name="Options[${idx}].OptionText_es" class="form-control" value="${es}" />`,
               `<input type="text" name="Options[${idx}].OptionText_en" class="form-control" value="${en}" />`,
-              `<button type="button" class="btn btn-danger"><span class="fas fa-trash"></span></button>`
+              `<button type="button" class="btn btn-danger delete-row"><span class="fas fa-trash"></span></button>`
             ]
 
 
