@@ -1,0 +1,255 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Artigo.Models.Artigo
+@*@model IEnumerable<ArtigoViewModel>*@
+
+<table id="artigoTable" class="table table-striped dt-responsive nowrap display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["Empresa"]</th>
+            <th>@localizer["Referência"]</th>
+            <th>@localizer["Género"]</th>
+            <th>@localizer["Pele"]</th>
+            <th>@localizer["Cor"]</th>
+            <th>@localizer["Ações"]</th>
+        </tr>
+    </thead>
+</table>
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    })
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var options = {
+            isEnabled: true,
+            saveState: true
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        var table = $("#artigoTable").DataTable({
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            serverSide: true,
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            lengthMenu: [
+                [20, 50, 100, 500, 1000, -1],
+                [20, 50, 100, 500, 1000, '@localizer["Todos"]'],
+            ],
+            ajax: {
+                url: "/Artigo/Artigo/GetArtigos",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+                    $.busyLoadFull("show");
+
+                    var EmpresaFilterValue = $('#EmpresaFilterId').val();
+                    if (EmpresaFilterValue == null || EmpresaFilterValue == "") {
+                        d.empresaFilter = "0";
+                    }
+                    else {
+                        d.empresaFilter = EmpresaFilterValue;
+                    }
+
+                    var GenderFilterValue = $('#GenderFilterId').val();
+                    if (GenderFilterValue == null || GenderFilterValue == "") {
+                        d.genderFilter = "0";
+                    }
+                    else {
+                        d.genderFilter = GenderFilterValue;
+                    }
+                }
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de artigos"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de artigos"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de artigos"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de artigos"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>',
+                }
+            ],
+            columnDefs: [
+                { 
+                    visible: false, targets: [0]
+                },
+                {
+                    orderable: false, targets: [6]
+                },
+                {
+                    orderData: [0, 2], targets: [0]
+                },
+                {
+                    orderData: [2, 0], targets: [2]
+                },
+                {
+                    orderData: [1, 0], targets: [1]
+                },
+                {
+                    orderData: [3, 0], targets: [3]
+                },
+                {
+                    orderData: [4, 0], targets: [4]
+                },
+                {
+                    orderData: [5, 0], targets: [5]
+                },
+            ],
+            columns: [
+                { data: "id", name: "Id", autoWidth: true },
+                { data: "empresa", name: "Empresa", autoWidth: true },
+                { data: "referencia", name: 'Referencia', autoWidth: true },
+                { data: "gender", name: "Gender", autoWidth: true },
+                { data: "pele", name: "Pele", autoWidth: true },
+                { data: "cor", name: "Cor", autoWidth: true },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `<div class="btn-group dropend">
+                                    <button id="dropdown_${data}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        @localizer["Ação"]
+                                    </button>
+                                        <div class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_${data}">
+                                        <a class="dropdown-item" onclick="jQueryModalGet('/artigo/artigo/OnGetCreateOrEdit?id=${data}', '@localizer["Editar artigo"]', event, 'modal-xl')"><i class="fas fa-pencil-alt"></i> @localizer["Editar"]</a>
+                                                <form id="form_delete_${data}" action="/Artigo/Artigo/OnPostDelete?id=${data}" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover este artigo?"]')">
+                                            <a class="dropdown-item" href="javascript:$('#form_delete_${data}').submit();"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                        </form>
+                                    </div>
+                                </div>`;
+                    }
+                }
+            ]
+        });
+
+        $('#artigoTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $('#artigoTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected'); 
+                //table.columns.adjust();
+                //console.log("colums adjusted....");
+            }
+        });
+
+        $('#artigoTable tbody').on('dblclick', 'tr', function () {
+            $(this).addClass('selected');
+            var data = table.row(this).data();
+            //alert('You clicked on ' + JSON.stringify(data) + '\'s row');
+            jQueryModalGet('/artigo/artigo/OnGetCreateOrEdit?id=' + data.id, '@localizer["Editar artigo"]', event, 'modal-xl')
+        });
+
+    });
+
+    var logo = getLVLlogo('logo-lvl-dark.png');
+
+    function getLVLlogo(logoName) {
+
+        let _logoName = logoName;
+        let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+        let formData = new FormData();
+        formData.append("logoName", _logoName);
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        logo = data.logoBase64;
+                        //alert(logo);
+                    }
+                },
+                error: function () {
+                    alert("getLVLlogo: Error occurs");
+                }
+            }
+        );
+
+    };
+
+</script>

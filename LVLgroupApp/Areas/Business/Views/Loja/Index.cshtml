@@ -1,0 +1,43 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Lojas"];
+    ViewData["Caption"] = localizer["Configure aqui as suas lojas."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Business.Models.Loja
+@model LojaViewModel
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Lojas.Create)).Result.Succeeded)
+        {
+            <a onclick="jQueryModalGet('/business/loja/OnGetCreateOrEdit','@localizer["Criar loja"]', event, 'modal-lg')" class="btn btn-success mb-3">
+                <i class="fa fa-plus-square"></i> @localizer["Criar"]
+            </a>
+        }
+
+        <a id="reload" class="btn btn-primary text-white mb-3">
+            <i class="fa fas fa-bolt"></i>
+            @localizer["Recarregar"]
+        </a>
+    </div>
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#lojaTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+        });
+        function loadData() {
+            $('#viewAll').load('/business/loja/LoadAll');
+        }
+    </script>
+}

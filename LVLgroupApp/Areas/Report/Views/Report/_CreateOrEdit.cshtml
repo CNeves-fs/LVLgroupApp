@@ -1,0 +1,370 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.Report
+@model ReportViewModel
+
+
+<style>
+
+    #container-perguntas {
+        min-height: 50px;
+        max-height: 500px;
+    }
+
+    #container-relatorio {
+        min-height: 100px;
+        max-height: 500px;
+    }
+
+    .question-card {
+        cursor: grab;
+    }
+
+        .question-card .order-badge {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+    .drop-target-over {
+        outline: 2px dashed #0d6efd;
+    }
+</style>
+
+
+
+@{
+    var dateFormat = localizer["dd/MM/yyyy"].Value;
+}
+
+
+@{
+    var aspAction = "OnPostCreate";
+
+    if (Model.Id == 0)
+    {
+        ViewData["Title"] = localizer["Criar novo Relatório"];
+        ViewData["Caption"] = localizer["Responder às perguntas para criar novo Relatório."];
+    }
+    else
+    {
+        ViewData["Title"] = localizer["Editar Relatório"];
+        ViewData["Caption"] = localizer["Responder às perguntas do Relatório."];
+
+        aspAction = "OnPostEdit";
+    }
+}
+
+
+
+<form id="create-report-form" method="post" asp-area="Report" asp-controller="Report" asp-action=@aspAction asp-route-id="@Model.Id" onsubmit="return jQueryPost(this, event);" enctype="multipart/form-data">
+
+
+
+
+
+
+</form>
+
+
+
+
+
+@section Scripts {
+
+    <!-- jquery-validation translated messages -->
+    @{
+        string messageFile = @localizer["messages_pt.js"].Value;
+        string url = "/lib/jquery-validation/" + messageFile;
+    }
+
+    <script type="text/javascript" src=@url></script>
+
+
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        // Drag start: guardar id do card
+        function dragStartHandler(ev) {
+            ev.dataTransfer.setData("text/plain", ev.target.id);
+            ev.dataTransfer.effectAllowed = "move";
+            console.log("dragStartHandler: dragging element id=" + ev.target.id);
+        }
+
+
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+
+            // highlight
+            var dropTarget = ev.currentTarget;
+            if (dropTarget && !dropTarget.classList.contains('drop-target-over')) {
+                dropTarget.classList.add('drop-target-over');
+            }
+            console.log("dragOverHandler: over element id=" + dropTarget.id);
+        }
+
+
+
+        // Drop no container-relatorio: inserir antes do card alvo se existir
+        function dropHandlerRelatorio(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drop-target-over');
+
+            var draggedId = ev.dataTransfer.getData("text/plain");
+            var dragged = document.getElementById(draggedId);
+            if (!dragged) return;
+
+            console.log("dropHandlerRelatorio: dropped element id=" + draggedId);
+
+            // Encontrar o elemento alvo dentro do container (pode ser um card)
+            var container = document.getElementById('container-relatorio');
+            var target = ev.target;
+
+            // subir até encontrar um card ou o container
+            while (target && target !== container && !target.classList.contains('question-card')) {
+                target = target.parentElement;
+                console.log("dropHandlerRelatorio: climbing to find question-card, current target id=" + (target ? target.id : 'null'));
+            }
+
+            console.log("dropHandlerRelatorio: final target id=" + (target ? target.id : 'null'));
+
+            if (target && target !== container && target.classList.contains('question-card')) {
+                // inserir antes do target
+                container.insertBefore(dragged, target);
+                console.log("dropHandlerRelatorio: inserted before target id=" + target.id);
+            } else {
+                // append se não houver card alvo
+                container.appendChild(dragged);
+                console.log("dropHandlerRelatorio: appended to container");
+            }
+
+
+            // atualizar inputs para POST
+            rebuildQuestionTemplateInReportInputs();
+        }
+
+
+
+        // Drop de volta para painel de perguntas
+        function dropHandlerQuestions(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drop-target-over');
+
+            var draggedId = ev.dataTransfer.getData("text/plain");
+            var dragged = document.getElementById(draggedId);
+            if (!dragged) return;
+
+            var container = document.getElementById('container-perguntas');
+            var target = ev.target;
+
+            // garantir append ao final (simples)
+            container.appendChild(dragged);
+
+            // atualizar inputs para POST (remover o item)
+            rebuildQuestionTemplateInReportInputs();
+        }
+
+
+
+        // Reconstrói os hidden inputs QuestionTemplateInReportList[*] com a ordem atual do container-relatorio
+        function rebuildQuestionTemplateInReportInputs() {
+            var container = document.getElementById('container-relatorio');
+            var inputsWrapperServer = document.getElementById('ServerGeneratedSelectedQuestionsInputs');
+            var inputsWrapper = document.getElementById('ServerGeneratedSelectedQuestionsInputs');
+
+            // Se não existir, criar wrapper
+            if (!inputsWrapper) {
+                inputsWrapper = document.createElement('div');
+                inputsWrapper.id = 'ServerGeneratedSelectedQuestionsInputs';
+                document.querySelector('form').appendChild(inputsWrapper);
+            }
+
+            // Limpar todos os inputs atuais
+            inputsWrapper.innerHTML = '';
+
+
+            // container-perguntas:
+            // id="qt-qtvm.Id" data-qtemplate-id="qtvm.Id"
+            // data-qtemplate-typeid="qtvm.QuestionTypeId"
+            // data-rtq-id="0" data-rt-id="0"
+
+            // container-relatorio:
+            // id="qt-qTemplate.Id" data-qtemplate-id="qTemplate.Id"
+            // data-qtemplate-typeid="qTemplate.QuestionTypeId" 
+            // data-rtq-id="rtq.Id" data-rt-id="rtq.ReportTemplateId"
+
+
+            var cards = container.querySelectorAll('.question-card');
+            cards.forEach(function(card, idx) {
+                var qTemplateId = card.dataset.templateId || card.getAttribute('data-qtemplate-id');
+                var qTypeId = card.dataset.questionTypeId || card.getAttribute('data-qtemplate-typeid');
+                var rtqId = card.dataset.rtqId || card.getAttribute('data-rtq-id') || 0;
+                var reportTemplateId = document.getElementById('Id') ? document.getElementById('Id').value || 0 : 0;
+
+                // criar inputs com nomes para binding: QuestionTemplateInReportList[index].Property
+                var inputs = [
+                    { name: 'QuestionTemplateInReportList[' + idx + '].Id', value: rtqId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].ReportTemplateId', value: reportTemplateId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].QuestionTemplateId', value: qTemplateId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].QuestionTypeId', value: qTypeId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].Order', value: (idx + 1) }
+                ];
+
+                inputs.forEach(function(it) {
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = it.name;
+                    inp.value = it.value;
+                    inputsWrapper.appendChild(inp);
+                });
+
+                // atualizar badge de ordem no card
+                var badge = card.querySelector('.order-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'order-badge badge bg-secondary ms-2';
+                    // var title = card.querySelector('.card-header .card-title');
+                    // if (title) title.appendChild(badge);
+                    var hd = card.querySelector('.card-header');
+                    if (hd) hd.appendChild(badge);
+                }
+                badge.textContent = (idx + 1);
+            });
+            // Remover badges de cards que ficaram no painel de perguntas
+            var allCards = document.querySelectorAll('.question-card');
+            allCards.forEach(function(c) {
+                if (!document.getElementById('container-relatorio').contains(c)) {
+                    var b = c.querySelector('.order-badge');
+                    if (b) b.remove();
+                }
+            });
+        }
+
+
+
+    </script>
+
+
+
+
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        $(document).ready(function () {
+
+
+            //------------------------- Client validation ----------------------------
+
+
+
+            $("#create-reporttemplate-form").removeData("validator");
+
+
+            $("#create-reporttemplate-form").validate({
+                rules: {
+                    Name: {
+                        required: true
+                    }
+                },
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                },
+                highlight: function (element) {
+                    $(element).removeClass('is-valid').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+
+
+            jQueryPost = (form, event) => {
+                var isvalid = $(form).valid();
+                if (!isvalid) {
+                    event.preventDefault();
+                    console.log("form : not submited.");
+                    return false;
+                }
+                console.log("form : submited.");
+                return true;
+            };
+
+
+            //------------------------- Inicializar wizard ----------------------------
+
+
+            var stepper = new Stepper($('.bs-stepper')[0])
+
+
+
+            //------------------------- Inicializar draggable cards ----------------------------
+
+
+            $("#SelectReportTypeId").on("change", function () {
+                let _typeId =  $("#SelectReportTypeId").val();
+                $("#ReportTypeId").val(_typeId);
+                console.log('TypeId changed = ' + $("#ReportTypeId").val());
+            });
+
+
+
+            //------------------------- Inicializar draggable cards ----------------------------
+
+
+            // adicionar event listeners aos cards de pergunta
+            var allCards = document.querySelectorAll('.question-card');
+            allCards.forEach(function(card) {
+                card.addEventListener('dragstart', dragStartHandler);
+                console.log("card eventlistener added.");
+            });
+
+
+
+
+            //------------------------- Inicializar button Cancel ----------------------------
+
+
+            $("#btnCancel").on('click', function () {
+                console.log("EventListener : #btnCancel clicked.");
+
+                var _id = $('#id').val();
+
+                var _url = "/Report/ReportTemplate/OnPostCancel?id=" + _id;
+                var formData = new FormData();
+                formData.append("id", _id);
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: _url,
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        success: function (response) {
+                            // Redirect to the specified URL
+                            window.location.href = response.redirectToUrl;
+                        },
+                        error: function () {
+                            alert("Error occurs");
+                        }
+                    }
+                );
+            });
+
+            document.getElementById('btnSubmit').addEventListener('click', function() {
+                //this.disabled = true
+                // continuar com o submit
+            });
+
+        });
+
+    </script>
+
+}

@@ -1,0 +1,298 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.Report
+@using LVLgroupApp.Views.Shared.Components.AnswerText
+@using LVLgroupApp.Views.Shared.Components.AnswerText.Models
+@model ReportViewModel
+
+
+<style>
+
+    #container-perguntas {
+        min-height: 50px;
+        max-height: 500px;
+    }
+
+    #container-relatorio {
+        min-height: 100px;
+        max-height: 500px;
+    }
+
+    .question-card {
+        cursor: grab;
+    }
+
+        .question-card .order-badge {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+    .drop-target-over {
+        outline: 2px dashed #0d6efd;
+    }
+</style>
+
+
+
+@{
+    var dateFormat = localizer["dd/MM/yyyy"].Value;
+}
+
+
+@{
+    var aspAction = "OnPostCreate";
+
+    if (Model.Id == 0)
+    {
+        ViewData["Title"] = localizer["Criar novo Relatório"];
+        ViewData["Caption"] = localizer["Responder às perguntas para criar novo Relatório."];
+    }
+    else
+    {
+        ViewData["Title"] = localizer["Editar Relatório"];
+        ViewData["Caption"] = localizer["Responder às perguntas do Relatório."];
+
+        aspAction = "OnPostEdit";
+    }
+}
+
+
+
+
+
+
+<form id="create-report-form" method="post" asp-area="Report" asp-controller="Report" asp-action=@aspAction asp-route-id="@Model.Id" onsubmit="return jQueryPost(this, event);" enctype="multipart/form-data">
+
+
+    <input type="text" id="Id" name="Id"  asp-for="Id" class="form-control" hidden>
+    <input type="text" id="ReportTypeId" name="ReportTypeId" asp-for="ReportTypeId" class="form-control" hidden>
+    <input type="text" id="ReportTemplateId" name="ReportTemplateId" asp-for="ReportTemplateId" class="form-control" hidden>
+
+
+    <div class="bs-stepper wizard-vertical vertical">
+
+        <div class="bs-stepper-header">
+
+            @{
+                for (int stepIndex = 0; stepIndex <= Model.Answers.Count; stepIndex++)
+                {
+                    if (stepIndex > 0)
+                    {
+                        // steps das perguntas
+                        var stepId = "#question-" + stepIndex;
+                        <div class="step" data-target=@stepId>
+                            <button type="button" class="step-trigger">
+                                <span class="bs-stepper-circle">@stepIndex</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">@localizer["Pergunta"]</span>
+                                    <span class="bs-stepper-subtitle">@Model.Answers[stepIndex].QuestionTypeName</span>
+                                </span>
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        //step do início configuração do relatório
+                        var stepId = "#setup-" + stepIndex;
+                        <div class="step" data-target=@stepId>
+                            <button type="button" class="step-trigger">
+                                <span class="bs-stepper-circle">@stepIndex</span>
+                                <span class="bs-stepper-label">
+                                    <span class="bs-stepper-title">@localizer["Relatório"]</span>
+                                    <span class="bs-stepper-subtitle">@localizer["Configuração"]</span>
+                                </span>
+                            </button>
+
+                        </div>
+                    }
+
+                    if (stepIndex < Model.Answers.Count)
+                    {
+                        <div class="line"></div>
+                    }
+                }
+            }
+
+        </div>
+
+    </div>
+
+    <div class="bs-stepper-content">
+
+        <form onSubmit="return false">
+
+            @{
+                for (int stepIndex = 1; stepIndex <= Model.Answers.Count; stepIndex++)
+                {
+                    if (stepIndex > 0)
+                    {
+                        var stepId = "question-" + stepIndex;
+                        <div id=@stepId class="content">
+                        
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- step de configuração do relatório -->
+                        var stepId = "#setup-" + stepIndex;
+                        <div id=@stepId class="content">
+                            <!-- data do relatório e language -->
+                            <div class="d-flex flex-row justify-content-between">
+                                <span class="mr-2 d-lg-inline text-gray-600 small">
+                                    @if (Model.Language == "en")
+                                    {
+                                        <i class="flag-icon flag-icon-gb"></i>
+                                    }
+                                    else if (Model.Language == "pt")
+                                    {
+                                        <i class="flag-icon flag-icon-pt"></i>
+                                    }
+                                    else if (Model.Language == "es")
+                                    {
+                                        <i class="flag-icon flag-icon-es"></i>
+                                    }
+                                </span>
+                                <label class="float-lg-end" for="ReportDate">@localizer["Data"] : @Model.ReportDate.ToString(dateFormat)</label>
+                            </div>
+                        
+                        
+                        
+                        </div>
+                    }
+                }
+            }
+
+
+
+
+        </form>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</form>
+
+
+
+
+
+@section Scripts {
+
+    <!-- jquery-validation translated messages -->
+    @{
+        string messageFile = @localizer["messages_pt.js"].Value;
+        string url = "/lib/jquery-validation/" + messageFile;
+    }
+
+    <script type="text/javascript" src=@url></script>
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        $(document).ready(function () {
+
+
+            //------------------------- Client validation ----------------------------
+
+
+
+            $("#create-reporttemplate-form").removeData("validator");
+
+
+            $("#create-reporttemplate-form").validate({
+                rules: {
+                    Name: {
+                        required: true
+                    }
+                },
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                },
+                highlight: function (element) {
+                    $(element).removeClass('is-valid').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+
+
+
+            //------------------------- Prevent for submit if invalid ----------------------------
+
+
+
+            jQueryPost = (form, event) => {
+                var isvalid = $(form).valid();
+                if (!isvalid) {
+                    event.preventDefault();
+                    console.log("form : not submited.");
+                    return false;
+                }
+                console.log("form : submited.");
+                return true;
+            };
+
+
+            //------------------------- Inicializar wizard ----------------------------
+
+
+            var stepper = new Stepper($('.bs-stepper')[0])
+
+
+            //------------------------- Inicializar button Cancel ----------------------------
+
+
+            $("#btnCancel").on('click', function () {
+                console.log("EventListener : #btnCancel clicked.");
+
+                var _id = $('#id').val();
+
+                var _url = "/Report/Report/OnPostCancel?id=" + _id;
+                var formData = new FormData();
+                formData.append("id", _id);
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: _url,
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        success: function (response) {
+                            // Redirect to the specified URL
+                            window.location.href = response.redirectToUrl;
+                        },
+                        error: function () {
+                            alert("Error occurs");
+                        }
+                    }
+                );
+            });
+
+            document.getElementById('btnSubmit').addEventListener('click', function() {
+                //this.disabled = true
+                // continuar com o submit
+            });
+
+        });
+
+    </script>
+
+}

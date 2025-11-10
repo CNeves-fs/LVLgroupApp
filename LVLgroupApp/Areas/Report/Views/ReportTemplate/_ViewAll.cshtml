@@ -1,0 +1,316 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+
+
+
+
+<!--Tabela de ReportTemplate-->
+
+<table id="reportTemplateTable" class="table table-striped dt-responsive nowrap display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["Nome"]</th>
+            <th>@localizer["Tipo"]</th>
+            <th>@localizer["Data"]</th>
+            <th>@localizer["Total perguntas"]</th>
+            <th>@localizer["Relatórios"]</th>
+            <th>@localizer["Ações"]</th>
+        </tr>
+    </thead>
+</table>
+
+
+
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    });
+
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+
+        var options = {
+            isEnabled: true,
+            saveState: true
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        if ($.fn.dataTable.isDataTable('#reportTemplateTable')) {
+            $('#reportTemplateTable').DataTable().clear();
+            $('#reportTemplateTable').DataTable().destroy();
+        }
+
+        var table = $("#reportTemplateTable").DataTable({
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            serverSide: true,
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            destroy: true,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            lengthMenu: [
+                [20, 50, 100, 500, 1000, -1],
+                [20, 50, 100, 500, 1000, '@localizer["Todos"]'],
+            ],
+            ajax: {
+                url: "/Report/reportTemplate/GetReportTemplates",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+
+                    $.busyLoadFull("show");
+
+                    d.reportType = $('#ReportType').val();
+                    d.version = $('#VersionIndex').val();
+                    d.isActive = $('#ActiveIndex').is(':checked');
+
+                    //str = JSON.stringify(d, null, 4); // (Optional) beautiful indented output.
+                    //console.log(str); // Logs output to dev tools console.
+                }
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de tipos de Modelos de Relatórios"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de tipos de Modelos de Relatórios"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de tipos de Modelos de Relatórios"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de tipos de Modelos de Relatórios"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>'
+                }
+            ],
+            columnDefs: [
+                {
+                    orderable: false, targets: [3, 4, 5, 6]
+                },
+                {
+                    orderData: [0, 1], targets: [0]
+                },
+                {
+                    orderData: [1, 0], targets: [1]
+                },
+                {
+                    orderData: [2, 0], targets: [2]
+                },
+                {
+                    orderData: [0, 2], targets: [0]
+                }
+
+            ],
+            // order: [[0, 'desc']],
+            columns: [
+                { data: "id", name: "Id", autoWidth: true },
+                {
+                    data: "name",
+                    name: "Name",
+                    render: function (data) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log(str); // Logs output to dev tools console.
+                        return "<div class='text-wrap text-break' style='width: 300px'>" + data + "</div>";
+                    }
+                },
+                { data: "reportTypeName", name: "ReportTypeName", autoWidth: true },
+                {
+                    data: null,
+                    name: "CreatedAt",
+                    render: function (data, type, row) {
+                        //str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        //console.log("createdAt data:" + str); // Logs output to dev tools console.
+                        var reportDate = new Date(data.createdAt);
+                        var strDate = reportDate.toLocaleDateString('@localizer["pt-PT"]');
+
+                        var active = `<span class="badge text-bg-success" style="padding-top: 5px;">@localizer["Ativa"]</span>
+                                      <span class="badge text-bg-success" style="padding-top: 5px;">@localizer["Versão:"] ${data.version}</span>`
+                        var noactive = `<span class="badge text-bg-warning" style="padding-top: 5px;">@localizer["Inativa"]</span>
+                                        <span class="badge text-bg-warning" style="padding-top: 5px;">@localizer["Versão:"] ${data.version}</span>`
+                        var strCreated = `<span class="badge text-bg-secondary" style="padding-top: 5px;">${strDate}</span>`
+                        //console.log("contacted=" + JSON.stringify(contacted)); // Logs output to dev tools console.
+
+                        if (data.isActive) return strCreated  + '<br>' + active;
+                        return strCreated  + '<br>' + noactive;
+                    }
+                },
+                {
+                    data: null,
+                    name: "NumberOfQuestions",
+                    render: function (data) {
+                        return `<span class="badge text-bg-info" style="padding-top: 5px;">${data.numberOfQuestions}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    name: "UsedInReports",
+                    render: function (data) {
+                        return `<span class="badge text-bg-info" style="padding-top: 5px;">${data.usedInReports}</span>`;
+                    }
+                },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `<div class="btn-group dropend">
+                                        <button id="dropdown_${data}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            @localizer["Ação"]
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_${data}">
+                                            <a class="dropdown-item btn btn-success" href="/Report/ReportTemplate/OnGetEdit?id=${data}"><i class="fas fa-pencil-alt"></i> @localizer["Editar"]</a>
+                                            <form id="form_delete_${data}" action="/Report/reportTemplate/OnPostDelete?id=${data}" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover este Modelo de Relatório?"]')">
+                                                <a class="dropdown-item" href="javascript:$('#form_delete_${data}').submit();"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                            </form>
+                                        </div>
+                                    </div>`;
+                    }
+                }
+            ]
+        });
+
+
+
+
+        $('#reportTemplateTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $('#reportTemplateTable tbody').on('click', 'tr', function () {
+
+            var data = table.row( $(this) ).data();
+            //str = JSON.stringify(data, null, 4);        // (Optional) beautiful indented output.
+            //console.log("row clicked: " + str);         // Logs output to dev tools console.
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+
+        $('#reportTemplateTable tbody').on('dblclick', 'tr', function () {
+            $(this).addClass('selected');
+            var data = table.row(this).data();
+
+            str = JSON.stringify(data, null, 4);        // (Optional) beautiful indented output.
+            console.log("row dblclicked: " + str);      // Logs output to dev tools console.
+
+            LoadOnGetEdit(data.id);
+        });
+
+
+        function LoadOnGetEdit(reportTemplateId) {
+
+            console.log("LoadOnGetEdit id: " + reportTemplateId);
+
+            if (reportTemplateId > 0)
+            {
+                window.location.href = '/report/reportTemplate/OnGetEdit?id=' + reportTemplateId;
+            }
+            else
+            {
+                alert('@localizer["Erro: modelo de relatório inválido."]');
+            }
+        }
+
+
+        function getLVLlogo(logoName) {
+
+            let _logoName = logoName;
+            let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+            let formData = new FormData();
+            formData.append("logoName", _logoName);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status == "success") {
+                            logo = data.logoBase64;
+                            //alert(logo);
+                        }
+                    },
+                    error: function () {
+                        alert("getLVLlogo: Error occurs");
+                    }
+                }
+            );
+
+        };
+
+    });
+
+</script>

@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="str04" xml:space="preserve">
+    <value> removed.</value>
+  </data>
+  <data name="str01" xml:space="preserve">
+    <value>Claim with ID </value>
+  </data>
+  <data name="str02" xml:space="preserve">
+    <value> updated.</value>
+  </data>
+  <data name="str08" xml:space="preserve">
+    <value> updated.</value>
+  </data>
+  <data name="str07" xml:space="preserve">
+    <value>Customer with ID </value>
+  </data>
+  <data name="str13" xml:space="preserve">
+    <value> created.</value>
+  </data>
+  <data name="str11" xml:space="preserve">
+    <value> must be updated.</value>
+  </data>
+  <data name="erro02" xml:space="preserve">
+    <value>Error: Article does not belong to the defined company.</value>
+  </data>
+  <data name="erro01" xml:space="preserve">
+    <value>Error: Entry date on the portal must be after the claim date.</value>
+  </data>
+  <data name="erro05" xml:space="preserve">
+    <value>Error: Final decision is mandatory.</value>
+  </data>
+  <data name="erro06" xml:space="preserve">
+    <value>Error: Store closure description is required.</value>
+  </data>
+  <data name="erro13" xml:space="preserve">
+    <value>Error: Initial state not set.</value>
+  </data>
+  <data name="erro03" xml:space="preserve">
+    <value>Error: The Upload of 3 or more photos is required.</value>
+  </data>
+  <data name="erro15" xml:space="preserve">
+    <value>Error: Opinion of </value>
+  </data>
+  <data name="erro14" xml:space="preserve">
+    <value>Error: At least one of the Opinions of </value>
+  </data>
+  <data name="erro04" xml:space="preserve">
+    <value>Error: The responsible person's opinion is mandatory.</value>
+  </data>
+  <data name="erro12" xml:space="preserve">
+    <value>Error: Invalid status.</value>
+  </data>
+  <data name="erro09" xml:space="preserve">
+    <value>Error: Status obliges to check cash return.</value>
+  </data>
+  <data name="erro10" xml:space="preserve">
+    <value>Error: Status obliges to check Credit Note.</value>
+  </data>
+  <data name="erro11" xml:space="preserve">
+    <value>Error: Status obliges to check Rejected.</value>
+  </data>
+  <data name="erro07" xml:space="preserve">
+    <value>Error: Status obliges to check Article Repair.</value>
+  </data>
+  <data name="erro08" xml:space="preserve">
+    <value>Error: Status obliges to mark Item Exchange.</value>
+  </data>
+  <data name="str03" xml:space="preserve">
+    <value> has not been updated.</value>
+  </data>
+  <data name="str09" xml:space="preserve">
+    <value> or </value>
+  </data>
+  <data name="str05" xml:space="preserve">
+    <value>Technical Opinion with ID </value>
+  </data>
+  <data name="str06" xml:space="preserve">
+    <value> removed.</value>
+  </data>
+  <data name="str10" xml:space="preserve">
+    <value> is required.</value>
+  </data>
+  <data name="str12" xml:space="preserve">
+    <value> has not been updated.</value>
+  </data>
+  <data name="Colaborador:" xml:space="preserve">
+    <value>Collaborator:</value>
+  </data>
+  <data name="Cor:" xml:space="preserve">
+    <value>Color:</value>
+  </data>
+  <data name="Criar nova reclamação foi cancelada." xml:space="preserve">
+    <value>Create new claim has been cancelled.</value>
+  </data>
+  <data name="Data da compra:" xml:space="preserve">
+    <value>Date of purchase:</value>
+  </data>
+  <data name="Data da Reclamação:" xml:space="preserve">
+    <value>Claim date:</value>
+  </data>
+  <data name="Data Limite:" xml:space="preserve">
+    <value>Deadline:</value>
+  </data>
+  <data name="dd/MM/yyyy" xml:space="preserve">
+    <value>MM/dd/yyyy</value>
+  </data>
+  <data name="Decisão final:" xml:space="preserve">
+    <value>Final decision:</value>
+  </data>
+  <data name="Defeito do artigo:" xml:space="preserve">
+    <value>Article defect:</value>
+  </data>
+  <data name="Email:" xml:space="preserve">
+    <value>Email:</value>
+  </data>
+  <data name="Erro ao criar o tempFolder." xml:space="preserve">
+    <value>Error creating tempFolder.</value>
+  </data>
+  <data name="Erro inesperado - reclamação inválida." xml:space="preserve">
+    <value>Unexpected error - invalid claim.</value>
+  </data>
+  <data name="Erro inesperado ao editar a reclamação." xml:space="preserve">
+    <value>Unexpected error while editing the claim.</value>
+  </data>
+  <data name="Género:" xml:space="preserve">
+    <value>Gender:</value>
+  </data>
+  <data name="Loja:" xml:space="preserve">
+    <value>Store:</value>
+  </data>
+  <data name="LVL GROUP - Portal de Reclamações - Impresso em" xml:space="preserve">
+    <value>LVL GROUP - Claims Portal - Printed in</value>
+  </data>
+  <data name="Nome:" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="Opinião do cliente:" xml:space="preserve">
+    <value>Customer opinion:</value>
+  </data>
+  <data name="Parecer do responsável:" xml:space="preserve">
+    <value>Opinion of the responsible person:</value>
+  </data>
+  <data name="Pele:" xml:space="preserve">
+    <value>Skin:</value>
+  </data>
+  <data name="Referência:" xml:space="preserve">
+    <value>Reference:</value>
+  </data>
+  <data name="Resolução com o cliente:" xml:space="preserve">
+    <value>Resolution with the customer:</value>
+  </data>
+  <data name="Status:" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="Tamanho:" xml:space="preserve">
+    <value>Size:</value>
+  </data>
+  <data name="Telefone:" xml:space="preserve">
+    <value>Phone:</value>
+  </data>
+</root>

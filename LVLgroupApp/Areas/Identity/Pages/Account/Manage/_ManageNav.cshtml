@@ -1,0 +1,10 @@
+﻿@using Core.Entities.Identity;
+@inject SignInManager<ApplicationUser> SignInManager
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index" asp-route-userId=@ManageNavPages.GetUserId(ViewContext)>@localizer["Profile"]</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email/" asp-route-userId=@ManageNavPages.GetUserId(ViewContext)>@localizer["Email"]</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword" asp-route-userId=@ManageNavPages.GetUserId(ViewContext)>@localizer["Password"]</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData" asp-route-userId=@ManageNavPages.GetUserId(ViewContext)>@localizer["Personal data"]</a></li>
+</ul>

@@ -1,0 +1,54 @@
+﻿@using Core.Constants
+@using Core.Enums
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model LVLgroupApp.Views.Shared.Components.AnswerText.Models.AnswerTextViewModel
+
+
+@* control utilizado para o bind da resposta do tipo texto longo *@
+<input type="hidden" class="form-control" name="Answers[@Model.stepIndex].Answer" value="@Model.AnswerText" id="answerHidden-@Model.stepIndex" />
+
+
+<div class="card question-card border border-warning border-2 mb-2" id="qt-@Model.stepIndex">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="card-title">@Model.QuestionText</h5>
+    </div>
+    <div class="card-body">
+        <div class="form-floating mt-3">
+            <textarea id="AnswerText-@Model.stepIndex" name="AnswerText-@Model.stepIndex" class="form-control" style="height:100px;">@Model.AnswerText</textarea>
+            <label class="col-form-label" for="AnswerText-@Model.stepIndex">@localizer["A sua resposta"]</label>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+         var idx = '@Model.stepIndex';
+         var textArea = document.getElementById('AnswerText-' + idx);
+         var hiddenInput = document.getElementById('answerHidden-' + idx);
+         if (!textArea || !hiddenInput) return;
+
+         function sync() { 
+             hiddenInput.value = textArea.value; 
+         }
+
+         // Atualiza o hidden input sempre que o textarea muda
+         textArea.addEventListener('input', sync, { passive: true });
+         textArea.addEventListener('change', sync);
+
+         // garantia extra: no submit do formulário, atualiza o hidden (caso haja)
+         var form = textArea.closest('form');
+         if (form) {
+            form.addEventListener('submit', sync);
+         }
+
+         // sincroniza valor inicial
+         sync();
+    })();
+</script>
+
+
+
+

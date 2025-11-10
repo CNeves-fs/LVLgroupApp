@@ -1,0 +1,125 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Cliente.Models.Cliente
+@using LVLgroupApp.Areas.Claim.Models.Claim
+@model TabClienteViewModel
+@{
+    ViewData.TemplateInfo.HtmlFieldPrefix = "Cliente";
+}
+
+
+<div id="ViewTabCliente" class="col-md-12">
+    <input type="text" id="Cliente_Telefone" asp-for="Telefone" name="Cliente.Telefone" class="form-control" hidden>
+    
+    <div class="row pb-lg-3">
+        <div class="col-md-4">
+            <div class="form-floating mt-3">
+                <select name="Cliente.Id" class="form-select" id="Cliente_Id" asp-for="Id" value="@Model.Id" data-placeholder='@localizer["Selecione um telefone de cliente"]'>
+                    @if (Model.Id > 0)
+                    {
+                        <option value="@Model.Id" selected="selected">@Model.Telefone</option>
+                    }
+                </select>
+                <label class="col-form-label" for="Cliente_Id">@localizer["Telefone"]</label>
+                @*<small><span asp-validation-for="Id" class="text-danger"></span></small>*@
+            </div>
+        </div>
+        <div class="col-md-8">
+            @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Clientes.Create)).Result.Succeeded)
+            {
+                <a onclick="jQueryModalGet('/cliente/cliente/OnGetCreateCliente','@localizer["Criar cliente"]', event, 'modal-xl')" class="btn btn-success float-lg-end mt-3">
+                    <i class="fa fa-plus-square"></i> @localizer["Criar cliente"]
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="row pb-lg-3">
+        <div class="col-md-4">
+            <div class="form-floating mt-3">
+                <input id="Cliente_Nome" name="Cliente.Nome" asp-for="@Model.Nome" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Cliente_Nome">@localizer["Nome"]</label>
+                @*<small><span asp-validation-for="@Model.Nome" class="text-danger"></span></small>*@
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mt-3">
+                <input id="Cliente_Email" name="Cliente.Email" asp-for="@Model.Email" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Cliente_Email">@localizer["Email"]</label>
+                @*<small><span asp-validation-for="@Model.Email" class="text-danger"></span></small>*@
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mt-3">
+                <input id="Cliente_NIF" name="Cliente.NIF" asp-for="@Model.NIF" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Cliente_NIF">@localizer["NIF"]</label>
+                @*<small><span asp-validation-for="@Model.NIF" class="text-danger"></span></small>*@
+            </div>
+        </div>
+    </div>
+
+    <div class="row pb-lg-3">
+        <div class="col-md-6">
+            <div class="accordion mt-3" id="accordionUltimoContacto">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            @localizer["Último contacto"]
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-md-6 col-sm-12">
+                                    <div class="form-floating mt-3">
+                                        <input id="Cliente_DataUltimoContacto" type="text" name="Cliente.DataUltimoContacto" class="form-control" asp-for="DataUltimoContacto" value="@Model.DataUltimoContacto.ToShortDateString()" placeholder="name@example.com">
+                                        <label class="col-form-label" for="Cliente_DataUltimoContacto">@localizer["Data"]</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-12">
+                                    <div class="form-floating mt-3">
+                                        <select name="Cliente.TipoContactoSelect" class="form-select" id="Cliente_TipoContactoSelect" asp-for="@Model.TipoContacto" asp-items="@Model.TipoContactoList">
+                                        </select>
+                                        <label class="col-form-label" for="Cliente_TipoContactoSelect">@localizer["Tipo de contacto"]</label>
+                                        @*<small><span asp-validation-for="@Model.TipoContacto" class="text-danger"></span></small>*@
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-floating mt-3">
+                                        <textarea id="Cliente_DescriçãoContacto" name="Cliente.DescriçãoContacto" asp-for="@Model.DescriçãoContacto" type="text" class="form-control" placeholder="name@example.com" wrap="soft" style="height: 100px;"></textarea>
+                                        <label class="col-form-label" for="Cliente_DescriçãoContacto">@localizer["Descrição"]</label>
+                                        @*<small><span asp-validation-for="@Model.DescriçãoContacto" class="text-danger"></span></small>*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-floating mt-3">
+                        <input id="floatingIBAN" name="floatingIBAN" asp-for="@Model.IBAN" type="text" class="form-control" placeholder="name@example.com">
+                        <label class="col-form-label" for="floatingIBAN">@localizer["IBAN"]</label>
+                        @*<small><span asp-validation-for="@Model.IBAN" class="text-danger"></span></small>*@
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-floating mt-3">
+                        <textarea id="floatingMorada" name="floatingMorada" asp-for="@Model.Morada" type="text" class="form-control" placeholder="name@example.com" wrap="soft" style="height: 100px;"></textarea>
+                        <label class="col-form-label" for="floatingMorada">@localizer["Morada"]</label>
+                        @*<small><span asp-validation-for="@Model.Morada" class="text-danger"></span></small>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

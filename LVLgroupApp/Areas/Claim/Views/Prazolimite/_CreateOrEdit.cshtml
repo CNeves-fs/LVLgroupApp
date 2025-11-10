@@ -1,0 +1,226 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Claim.Models.Prazolimite
+@model PrazolimiteViewModel
+
+<form id="create-form" method="post" asp-area="Claim" asp-controller="Prazolimite" asp-action="OnPostCreateOrEdit" asp-route-id="@Model.Id" onsubmit="return jQueryModalPost(this, event, false);" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                @*<label class="col-form-label">@localizer["Prazos limite"]</label>*@
+                <div class="slider-2 mb-3" id="slider-distance">
+                    <div>
+                        <div class="inverse-left"></div>
+                        <div class="inverse-right"></div>
+                        <div class="range-2"></div>
+                        <span class="thumb-2 left"></span>
+                        <span class="thumb-2 right"></span>
+                        <div class="sign-2 left">
+                            <span id="value-left"></span>
+                        </div>
+                        <div class="sign-2 right">
+                            <span id="value-right"></span>
+                        </div>
+                    </div>
+                    <input type="range" id="input-left-2" asp-for="LimiteMin" min="0" max="30" step="1" />
+                    <input type="range" id="input-right-2" asp-for="LimiteMax" min="0" max="30" step="1" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-floating mt-3">
+                <input id="Alarme" name="Alarme" asp-for="@Model.Alarme" type="text" class="form-control" placeholder="name@example.com">
+                <label class="col-form-label" for="Alarme">@localizer["Alarme"]</label>
+                <small><span asp-validation-for="@Model.Alarme" class="text-danger"></span></small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group mt-3">
+                <div class="form-floating">
+                    <input id="Cortexto" name="Cortexto" asp-for="@Model.Cortexto" type="text" class="form-control" placeholder="name@example.com">
+                    <label class="col-form-label" for="Cortexto">@localizer["Cor do texto"]</label>
+                </div>
+                <span class="input-group-append ms-2">
+                    <input type="color" value="@Model.Cortexto" id="CortextoPicker" name="CortextoPicker" class="form-control form-control-color input-block h-100" />
+                </span>
+            </div>
+            <small><span asp-validation-for="@Model.Cortexto" class="text-danger"></span></small>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group mt-3">
+                <div class="form-floating">
+                    <input id="Corfundo" name="Corfundo" asp-for="@Model.Corfundo" type="text" class="form-control" placeholder="name@example.com">
+                    <label class="col-form-label" for="Corfundo">@localizer["Cor do fundo"]</label>
+                </div>
+                <span class="input-group-append ms-2">
+                    <input type="color" value="@Model.Corfundo" id="CorfundoPicker" name="CorfundoPicker" class="form-control form-control-color input-block h-100" />
+                </span>
+                <small><span asp-validation-for="@Model.Corfundo" class="text-danger"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <br/>
+    <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Edit)).Result.Succeeded)
+        {
+            <button type="submit" class="btn btn-success">@localizer["Salvar"]</button>
+        }
+            <button type="button" class="btn btn-secondary close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+    </div>
+</form>
+
+
+<!-- jquery-validation translated messages -->
+@{
+    string messageFile = @localizer["messages_pt.js"].Value;
+    string url = "/lib/jquery-validation/" + messageFile;
+}
+<script type="text/javascript" src=@url></script>
+
+
+<script type="text/javascript" language=javascript>
+
+    $("#create-form").removeData("validator");
+
+    jQuery.validator.addMethod("colorcode", function (value, element) {
+        return this.optional(element) || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value);
+    });
+
+    $("#create-form").validate({
+        rules: {
+            Alarme: {
+                required: true
+            },
+            Cortexto: {
+                required: true,
+                colorcode: true
+            },
+            Corfundo: {
+                required: true,
+                colorcode: true
+            }
+        },
+        errorElement: "div",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback");
+            if ($(element).attr('name') == "Alarme")
+            {
+                error.insertAfter(element);
+            }
+            else
+            {
+                error.insertAfter($(element).parent().parent());
+            }
+        },
+        highlight: function (element) {
+            $(element).removeClass('is-valid').addClass('is-invalid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+
+
+    $("#Corfundo").on("change", function () {
+        if ($(this).valid() == true)
+        {
+            $("#CorfundoPicker").val($(this).val());
+            range2.style.backgroundColor = $(this).val();
+        }
+        //alert($(this).val());
+    });
+
+    $("#CorfundoPicker").on("change", function () {
+        $('#Corfundo').val($(this).val());
+        range2.style.backgroundColor = $(this).val();
+    });
+
+    $("#Cortexto").on("change", function () {
+        if ($(this).valid() == true) {
+            $("#CortextoPicker").val($(this).val());
+        }
+        //alert($(this).val());
+    });
+
+    $("#CortextoPicker").on("change", function () {
+        $('#Cortexto').val($(this).val());
+    });
+
+
+    // ------------------- slider ------------------------
+
+
+    var inputLeft2 = document.getElementById("input-left-2");
+    var inputRight2 = document.getElementById("input-right-2");
+
+    var thumbLeft2 = document.querySelector(".slider-2 > div > .thumb-2.left");
+    var thumbRight2 = document.querySelector(".slider-2 > div > .thumb-2.right");
+    var range2 = document.querySelector(".slider-2 > div > .range-2");
+    var signLeft2 = document.querySelector(".slider-2 > div > .sign-2.left");
+    var signRight2 = document.querySelector(".slider-2 > div > .sign-2.right");
+    var signValueLeft2 = document.querySelector(".slider-2 > div > .sign-2.left > span");
+    var signValueRight2 = document.querySelector(".slider-2 > div > .sign-2.right > span");
+
+
+    function setLeftValue2() {
+        var _this = inputLeft2,
+            min = parseInt(_this.min),
+            max = parseInt(_this.max);
+
+        _this.value = Math.min(parseInt(_this.value), parseInt(inputRight2.value) - 1);
+        console.log("setLeftValue2 val = " + _this.value);
+
+        var percent = ((_this.value - min) / (max - min)) * 100;
+        console.log("setLeftValue2 percent = " + percent + "%");
+
+        thumbLeft2.style.left = percent + "%";
+        signLeft2.style.left = percent + "%";
+        signValueLeft2.innerHTML = _this.value;
+        range2.style.left = percent + "%";
+        range2.style.backgroundColor = $("#CorfundoPicker").val();
+    }
+    setLeftValue2();
+
+
+    function setRightValue2() {
+        var _this = inputRight2,
+            min = parseInt(_this.min),
+            max = parseInt(_this.max);
+
+        _this.value = Math.max(parseInt(_this.value), parseInt(inputLeft2.value) + 1);
+        console.log("setRighttValue2 val=" + _this.value);
+
+        var percent = ((_this.value - min) / (max - min)) * 100;
+        console.log("setRightValue2 percent = " + percent + "%");
+
+        thumbRight2.style.left = percent + "%";
+        signRight2.style.left = percent + "%";
+        signValueRight2.innerHTML = _this.value;
+        range2.style.right = (100 - percent) + "%";
+    }
+    setRightValue2();
+
+
+    inputLeft2.addEventListener("input", setLeftValue2);
+    inputRight2.addEventListener("input", setRightValue2);
+
+
+    inputLeft2.addEventListener("mousedown", function () {
+        thumbLeft2.classList.add("active");
+    });
+    inputLeft2.addEventListener("mouseup", function () {
+        thumbLeft2.classList.remove("active");
+    });
+
+    inputRight2.addEventListener("mousedown", function () {
+        thumbRight2.classList.add("active");
+    });
+    inputRight2.addEventListener("mouseup", function () {
+        thumbRight2.classList.remove("active");
+    });
+
+</script>

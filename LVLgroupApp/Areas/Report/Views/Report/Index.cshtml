@@ -1,0 +1,576 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Relatórios"];
+    ViewData["Caption"] = localizer["Configure aqui os seus Relatórios."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.Report
+@model ReportViewModel
+
+<style>
+    .form-group > .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+
+<input type="text" id="MercadoId_index" name="MercadoId_index" class="form-control" value="@Model.CurrentRole.MercadoId" hidden>
+<input type="text" id="EmpresaId_index" name="EmpresaId_index" class="form-control" value="@Model.CurrentRole.EmpresaId" hidden>
+<input type="text" id="GrupolojaId_index" name="GrupolojaId_index" class="form-control" value="@Model.CurrentRole.GrupolojaId" hidden>
+<input type="text" id="LojaId_index" name="LojaId_index" class="form-control" value="@Model.CurrentRole.LojaId" hidden>
+
+
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card" style="padding: 10px;">
+            <div class="row mb-3">
+                <div class="col-sm-12">
+                    @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Report.Create)).Result.Succeeded)
+                    {
+                        <a asp-area="Report" asp-controller="Report" asp-action="OnGetCreate" class="btn btn-success mb-3">
+                            <i class="fa fa-plus-square"></i> @localizer["Criar"]
+                        </a>
+                    }
+                    <a id="reload" class="btn btn-primary text-white full-width mb-3">
+                        <i class="fa fas fa-bolt"></i>
+                        @localizer["Recarregar"]
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                @* filtros Mercado:Empresa:Grupolojas:Loja *@
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectMercadoId_index" id="SelectMercadoId_index" class="form-select" data-placeholder='@localizer["Selecione um mercado"]'>
+                                        <option value="0">@localizer["Selecione um mercado"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectMercadoId_index">@localizer["Mercado"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectMercadoId_index_fix" id="SelectMercadoId_index_fix" class="form-select" asp-items="Model.Mercados" data-placeholder='@localizer["Selecione um mercado"]' disabled>
+                                        <option value="0">@localizer["Selecione um mercado"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectMercadoId_index_fix">@localizer["Mercado"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectEmpresaId_index" id="SelectEmpresaId_index" class="form-select" data-placeholder='@localizer["Selecione uma empresa"]'>
+                                        <option value="0">@localizer["Selecione uma empresa"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="EmpresaId_index">@localizer["Empresa"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectEmpresaId_index_fix" id="SelectEmpresaId_index_fix" class="form-select" asp-items="Model.Empresas" data-placeholder='@localizer["Selecione uma empresa"]' disabled>
+                                        <option value="0">@localizer["Selecione uma empresa"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectEmpresaId_index_fix">@localizer["Empresa"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectGrupolojaId_index" id="SelectGrupolojaId_index" class="form-select" data-placeholder='@localizer["Selecione um agrupamento"]'>
+                                        <option value="0">@localizer["Selecione um agrupamento"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectGrupolojaId_index">@localizer["Agrupamento"]</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectGrupolojaId_index_fix" id="SelectGrupolojaId_index_fix" class="form-select" asp-items="Model.GruposLojas" data-placeholder='@localizer["Selecione um agrupamento"]' disabled>
+                                        <option value="0">@localizer["Selecione um agrupamento"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectGrupolojaId_index_fix">@localizer["Agrupamento"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            @if (Model.CurrentRole.IsSuperAdmin || Model.CurrentRole.IsAdmin || Model.CurrentRole.IsRevisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index" id="SelectLojaId_index" class="form-select" data-placeholder='@localizer["Selecione uma loja"]'>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index">@localizer["Loja"]</label>
+                                </div>
+                            }
+                            @if (Model.CurrentRole.IsSupervisor)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index" id="SelectLojaId_index" class="form-select" asp-items="Model.Lojas" data-placeholder='@localizer["Selecione uma loja"]'>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index">@localizer["Loja"]</label>
+                                </div>
+                            }
+                            @if (Model.CurrentRole.IsBasic || Model.CurrentRole.IsColaborador || Model.CurrentRole.IsGerenteLoja)
+                            {
+                                <div class="form-floating mb-3">
+                                    <select name="SelectLojaId_index_fix" id="SelectLojaId_index_fix" class="form-select" asp-items="Model.Lojas" data-placeholder='@localizer["Selecione uma loja"]' disabled>
+                                        <option value="0">@localizer["Selecione uma loja"]</option>
+                                    </select>
+                                    <label class="col-form-label label-select" for="SelectLojaId_index_fix">@localizer["Loja"]</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <!--type / version-->
+        <div class="row mt-2">
+            <!--question type button-->
+            <div class="col-lg-6 col-12">
+                <div class="form-floating mb-3">
+                    <select id="ReportType" name="ReportTemplateType" class="form-select">
+                        <option value="0">@localizer["Todos os tipos"]</option>
+                        @foreach (var item in Model.ReportTemplateTypes)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <label class="col-form-label" for="ReportType">@localizer["Tipo de Relatório"]</label>
+                </div>
+            </div>
+            <!--template selector-->
+            <div class="col-lg-6 col-12">
+                <div class="form-floating mb-3">
+                    <select id="ReportTemplate" name="ReportTemplate" class="form-select">
+                        <option value="0">@localizer["Todos os modelos"]</option>
+                        @foreach (var item in Model.ReportTemplates)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <label class="col-form-label" for="ReportType">@localizer["Modelo"]</label>
+                </div>
+            </div>
+        </div>
+
+        <!--active only / version-->
+        <div class="row mt-2">
+            <div class="col-lg-6 col-12">
+                <div class="form-check form-switch mb-3">
+                    <input id="ActiveIndex" name="ActiveIndex" class="form-check-input" type="checkbox" role="checkbox" name="ActiveIndex" />
+                    <label class="form-check-label" for="Active">@localizer["Apenas modelos ativos"]</label>
+                </div>
+            </div>
+            <div class="col-lg-6 col-12">
+                <div class="form-floating mb-3">
+                    <input id="VersionIndex" name="VersionIndex" type="number" class="form-control" step="1">
+                    <label class="col-form-label" for="DataDashboard">@localizer["Versão"]</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+
+        function loadData() {
+            $('#viewAll').load('/report/report/LoadAll');
+        }
+
+
+
+        function LoadGrupolojaSelect_index(empId) {
+            //alert("Empresa changed = " + empId);
+
+            var _empresaId = empId;
+            var _url = "/Business/Grupoloja/LoadGruposlojas?empresaId=_empresaId";
+            var formData = new FormData();
+            formData.append("empresaId", _empresaId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        //$("#GrupolojaId_index").val(0);
+                        $('#SelectGrupolojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione um agrupamento"]');
+                        $(option).appendTo("#SelectGrupolojaId_index");
+                        $(_list.gruposlojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectGrupolojaId_index");
+                        });
+                        $("#GrupolojaId_index").val($("#SelectGrupolojaId_index").val());
+                        LoadLojaSelect_index($("#SelectGrupolojaId_index").val());
+                        $('#reportTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+        };
+
+        function LoadLojaSelect_index(grupoId) {
+            //alert("Grupoloja changed = " + grupoId);
+
+            var _grupolojaId = grupoId;
+            var _url = "/Business/Loja/LoadLojasInGrupoloja?grupolojaId=_grupolojaId";
+            var formData = new FormData();
+            formData.append("grupolojaId", _grupolojaId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#LojaId_index").val(0);
+                        $('#SelectLojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma loja"]');
+                        $(option).appendTo("#SelectLojaId_index");
+                        $(_list.lojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectLojaId_index");
+                        });
+                        $("#LojaId_index").val($("#SelectLojaId_index").val());
+                        $('#reportTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadLojaSelectFromMercado_index(mercadoId) {
+            //alert("Mercado changed = " + mercadoId);
+
+            var _mercadoId = mercadoId;
+            var _url = "/Business/Loja/LoadLojasInMercado?mercadoId=_mercadoId";
+            var formData = new FormData();
+            formData.append("mercadoId", _mercadoId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#LojaId_index").val(0);
+                        $('#SelectLojaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma loja"]');
+                        $(option).appendTo("#SelectLojaId_index");
+                        $(_list.lojasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectLojaId_index");
+                        });
+                        $("#LojaId_index").val($("#SelectLojaId_index").val());
+                        $('#reportTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadAllEmpresas_index() {
+            //alert("Empresas inicializados");
+
+            var _url = "/Business/Empresa/LoadAllEmpresas";
+            var formData = new FormData();
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#EmpresaId_index").val(0);
+                        $('#SelectEmpresaId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione uma empresa"]');
+                        $(option).appendTo("#SelectEmpresaId_index");
+                        $(_list.empresasList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectEmpresaId_index");
+                        });
+                        $("#EmpresaId_index").val($("#SelectEmpresaId_index").val());
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+        function LoadAllMercados_index() {
+            //alert("Mercados inicializados");
+
+            var _url = "/Business/Mercado/LoadAllMercados";
+            var formData = new FormData();
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        // $("#MercadoId_index").val(0);
+                        $('#SelectMercadoId_index').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Selecione um mercado"]');
+                        $(option).appendTo("#SelectMercadoId_index");
+                        $(_list.mercadosList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#SelectMercadoId_index");
+                        });
+                        $("#MercadoId_index").val($("#SelectMercadoId_index").val());
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+
+        function LoadTemplateSelectFromType(reportTypeId) {
+            alert("ReportType changed = " + reportTypeId);
+
+            var _reportTypeId = reportTypeId;
+            var _url = "/Report/ReportTemplate/LoadTemoplatesFromType?reportTypeId=" + _reportTypeId;
+            var formData = new FormData();
+            formData.append("reportTypeId", _reportTypeId);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        let _list = JSON.parse(data);
+                        $('#ReportTemplate').find('option').remove();
+                        let option = document.createElement('option');
+                        $(option).val(0).text('@localizer["Todos os modelos"]');
+                        $(option).appendTo("#ReportTemplate");
+                        $(_list.templatesList).each(function () {
+                            let option = document.createElement('option');
+                            $(option).val(this.Value).text(this.Text);
+                            $(option).appendTo("#ReportTemplate");
+                        });
+                        $('#reportTable').DataTable().draw();
+                    },
+                    error: function () {
+                        alert("Error occurs");
+                    }
+                }
+            );
+
+        };
+
+
+        $(document).ready(function () {
+
+
+            $("#ReportType").on("change", function () {
+                console.log("ReportType foi atualizada = " + this.value);
+                LoadTemplateSelectFromType(this.value);
+                $('#reportTable').DataTable().draw();
+            });
+
+            $("#ReportTemplate").on("change", function () {
+                console.log("ReportTemplate foi atualizado = " + $("#ReportTemplate").val());
+                $('#reportTable').DataTable().draw();
+            });
+
+             $("#VersionIndex").on("change", function () {
+                console.log("VersionIndex foi atualizada = " + $("#VersionIndex").val());
+                $('#reportTable').DataTable().draw();
+            });
+
+
+             $("#ActiveIndex").on("change", function () {
+                console.log("ActiveIndex foi clickada = " + $('#ActiveIndex').is(':checked'));
+                $('#reportTable').DataTable().draw();
+            });
+
+
+
+            //------------------------- Inicializar plugin select2 ----------------------------
+
+
+            $('#SelectMercadoId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectEmpresaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectGrupolojaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $('#SelectLojaId_index').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+
+
+
+            //------------------------- Event Listeners ----------------------------
+
+
+            $("#SelectMercadoId_index").on("change", function () {
+                $("#MercadoId_index").val(this.value);
+                if (this.value > 0) {
+                    // selecionar loja atraves do Mercado
+                    $('#SelectEmpresaId_index').val(0);
+                    $('#SelectGrupolojaId_index').find('option').remove();
+                    $('#SelectLojaId_index').find('option').remove();
+                    $('#SelectEmpresaId_index').prop('disabled', true);
+                    $('#SelectGrupolojaId_index').prop('disabled', true);
+                    LoadLojaSelectFromMercado_index(this.value);
+                }
+                else {
+                    // selecionar loja atraves da Empresa
+                    $('#SelectEmpresaId_index').prop('disabled', false);
+                    $('#SelectGrupolojaId_index').prop('disabled', false);
+                    console.log("MercadoId=0, selecionar loja atraves da Empresa, #EmpresaId_index=" + $('#EmpresaId_index').val());
+                    LoadGrupolojaSelect_index($('#EmpresaId_index').val());
+                }
+            });
+
+            $("#SelectEmpresaId_index").on("change", function () {
+                $("#EmpresaId_index").val(this.value);
+                if (this.value > 0) {
+                    // selecionar loja atraves da Empresa
+                    $('#SelectMercadoId_index').prop('disabled', true);
+                    LoadGrupolojaSelect_index(this.value);
+                }
+                else {
+                    // selecionar loja atraves do Mercado
+                    $('#SelectEmpresaId_index').val(0);
+                    $('#SelectGrupolojaId_index').find('option').remove();
+                    $('#SelectLojaId_index').find('option').remove();
+                    $('#SelectMercadoId_index').prop('disabled', false);
+                    //LoadLojaSelect_index(this.value);
+                }
+            });
+
+            $("#SelectGrupolojaId_index").on("change", function () {
+                $("#GrupolojaId_index").val(this.value);
+                LoadLojaSelect_index(this.value);
+            });
+
+            $("#SelectLojaId_index").on("change", function () {
+                $("#LojaId_index").val(this.value);
+                console.log("LojaId_index foi atualizada = " + $("#LojaId_index").val());
+                $('#reportTable').DataTable().draw();
+            });
+
+
+
+            // ------------------- reportTable ------------------------
+
+
+            LoadAllEmpresas_index();
+            LoadAllMercados_index();
+            $("#reportTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+
+        });
+
+    </script>
+}

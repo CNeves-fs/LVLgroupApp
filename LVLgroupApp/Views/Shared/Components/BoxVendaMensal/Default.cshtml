@@ -1,0 +1,79 @@
+﻿@using Core.Constants
+@using Core.Enums
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model LVLgroupApp.Areas.Vendas.Models.VendaMensal.BoxMensalViewModel
+
+@{
+    var bg_color = "bg-warning";
+    if (Model.ValorTotalMensalDaVenda >= Model.ObjetivoMensalDaVenda)
+    {
+        bg_color = "bg-success";
+    }
+}
+
+
+
+
+<!-- Mensal -->
+<div id="smallBoxVendaMensal" class="small-box @bg_color mb-0">
+
+    <input type="text" id="Ano_boxMensal" name="Ano_boxMensal" class="form-control" value="@Model.Ano" hidden>
+    <input type="text" id="Mes_boxMensal" name="Mes_boxMensal" class="form-control" value="@Model.Mes" hidden>
+
+    <input type="text" id="MercadoId_boxMensal" name="MercadoId_boxMensal" class="form-control" value="@Model.MercadoId" hidden>
+    <input type="text" id="EmpresaId_boxMensal" name="EmpresaId_boxMensal" class="form-control" value="@Model.EmpresaId" hidden>
+    <input type="text" id="GrupolojaId_boxMensal" name="GrupolojaId_boxMensal" class="form-control" value="@Model.GrupolojaId" hidden>
+    <input type="text" id="LojaId_boxMensal" name="LojaId_boxMensal" class="form-control" value="@Model.LojaId" hidden>
+
+    @{
+        var differenceValueMensal = Math.Round(Model.ValorTotalMensalDaVenda - Model.ObjetivoMensalDaVenda, 2);
+        var percentValueMensal = 0.0;
+        if(Model.ObjetivoMensalDaVenda != 0)
+        {
+            percentValueMensal = Math.Round(100 * (differenceValueMensal / Model.ObjetivoMensalDaVenda), 2);
+        }      
+    }
+
+    <div class="inner p-1">
+        <h4 class="mb-0">
+            <span id="box-valormensaldavenda">€ @Model.ValorTotalMensalDaVenda ( @percentValueMensal % )</span>
+        </h4>
+        <p class="mb-3" style="margin-top: -10px"><small>@localizer["Total de vendas"] @Model.MesLiteral</small></p>
+        <h4 class="mb-0 mt-2">
+            <span id="box-objetivomensal">€ @Model.ObjetivoMensalDaVenda</span>
+        </h4>
+        <p class="mb-1" style="margin-top: -10px"><small>@localizer["Objetivo mensal"] (€ @differenceValueMensal)</small></p>
+    </div>
+    <div class="icon">
+        <i class="ion ion-logo-usd"></i>
+    </div>
+
+    <p class="small-box-footer">
+        @localizer["Apuramento mensal"]&nbsp <strong>@Model.MesLiteral</strong>
+        <i class="fas fa-info-circle"></i>
+    </p>
+
+@*     @if (AuthorizationService.AuthorizeAsync(User, Permissions.Vendas.Edit).Result.Succeeded && Model.LojaId > 0)
+    {
+        <a id="btnEditarVendaMensal" class="small-box-footer" href="#">
+            @localizer["Venda semanal corrente"]&nbsp;
+            <i class="fas fa-arrow-circle-right"></i>
+        </a>
+        <p>
+            @localizer["Apuramento mensal"]&nbsp;
+            <i class="fas fa-info-circle"></i>
+        </p>
+    }
+    else
+    {
+        <a class="small-box-footer" href="#">
+            @localizer["Apuramento mensal"]&nbsp;
+            <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    } *@
+
+</div>
+

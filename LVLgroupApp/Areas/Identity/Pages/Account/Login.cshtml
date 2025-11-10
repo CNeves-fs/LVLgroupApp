@@ -1,0 +1,92 @@
+﻿@page
+
+@using LVLgroupApp.Views.Shared.Components.HeaderPage;
+@using LVLgroupApp.Views.Shared.Components.Footer;
+@using LVLgroupApp.Views.Shared.Components.Theme;
+
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>@ViewData["Title"]</title>
+    <partial name="_Styles" />
+</head>
+
+<body>
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>
+        <div class="loader-section"></div>
+    </div>
+
+    <div class="wrapper d-flex flex-column min-vh-100">
+        @(await Component.InvokeAsync<HeaderPageViewComponent>())
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xxl-8 col-xl-10 col-lg-8 col-md-9 pt-xxl-5">
+                    <div class="card border-0 my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-6 d-none d-lg-block text-center">
+                                    <img id="login-logo" class="img-fluid" src="~/images/bg-login-portal.png" />
+                                </div>
+                                <div class="col-lg-6 pt-5">
+
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">@localizer["Login"]</h1>
+                                        </div>
+                                        <form id="account" method="post">
+                                            <div class="form-floating mb-3">
+                                                <input id="floatingInput" asp-for="Input.Email" type="email" class="form-control" placeholder="name@example.com">
+                                                <label for="floatingInput">@localizer["Endereço de email..."]</label>
+                                                <small><span asp-validation-for="Input.Email" class="text-danger"></span></small>
+                                            </div>
+                                            <div class="form-floating mb-3">
+                                                <input id="floatingPassword" asp-for="Input.Password" type="password" class="form-control" placeholder="Password">
+                                                <label for="floatingPassword">@localizer["Palavra-passe"]</label>
+                                                <small><span asp-validation-for="Input.Password" class="text-danger"></span></small>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input asp-for="Input.RememberMe" class="form-check-input" type="checkbox" role="switch" id="customCheck">
+                                                <label class="form-check-label" for="customCheck">@localizer["Lembre-se de mim"]</label>
+                                            </div>
+
+                                            <div class="text-center">
+                                                <button type="submit" class="btn btn-primary bg-gradient-primary w-100 my-4 mb-2">@localizer["Iniciar sessão"]</button>
+                                            </div>
+                                        </form>
+
+                                        <hr>
+
+                                        <div class="text-center">
+                                            <a asp-area="Identity" asp-page="/Account/forgotpassword" class="small">@localizer["Esqueceu-se da palavra-passe?"]</a>
+                                        </div>
+                                        <div class="text-center">
+                                            <a asp-area="Identity" asp-page="/Account/register" class="small">@localizer["Crie uma conta!"]</a>
+                                        </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @(await Component.InvokeAsync<ThemeViewComponent>())
+        @(await Component.InvokeAsync<FooterViewComponent>())
+    </div>
+    <partial name="_Scripts" />
+    @await Component.InvokeAsync("Notyf")
+</body>
+</html>

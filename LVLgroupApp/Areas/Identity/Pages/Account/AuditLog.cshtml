@@ -1,0 +1,185 @@
+﻿@page
+
+@using LVLgroupApp.Views.Shared.Components.Header;
+@using LVLgroupApp.Views.Shared.Components.Sidebar;
+@using LVLgroupApp.Views.Shared.Components.Title;
+@using LVLgroupApp.Views.Shared.Components.Footer;
+@using LVLgroupApp.Views.Shared.Components.Theme;
+@using LVLgroupApp.Views.Shared.Components.Logout;
+
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model LVLgroupApp.Areas.Identity.Pages.Account.AuditLogModel
+@{
+    ViewData["Title"] = @localizer["Logs de auditoria de "].Value + Model.Email;
+    Layout = null;
+    ViewData["Caption"] = localizer["Atividade da aplicação"];
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>@ViewData["Title"]</title>
+    <partial name="_Styles" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+</head>
+
+<body>
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>
+        <div class="loader-section"></div>
+    </div>
+
+
+    <div class="wrapper d-flex flex-column min-vh-100">
+        @(await Component.InvokeAsync<HeaderViewComponent>())
+        @(await Component.InvokeAsync<SidebarViewComponent>())
+        <div class="content-wrapper" id="contentWrapper">
+            <div class="content">
+                <div class="container-fluid" style="padding-bottom: 20px;">
+                    @(await Component.InvokeAsync<TitleViewComponent>())
+
+
+                    <div class="card">
+                        <div class="col-sm-12" style="padding:20px">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <a id="reload" class="btn btn-primary text-white mb-3">
+                                        <i class="fa fas fa-bolt"></i>
+                                        @localizer["Recarregar"]
+                                    </a>
+                                    <a id="cleanold" class="btn btn-primary text-white mb-3">
+                                        <i class="fa fas fa-trash"></i>
+                                        @localizer["Remover logs antigos"]
+                                    </a>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-floating mb-3">
+                                                    <input id="startDate" type="text" class="form-control" placeholder="name@example.com">
+                                                    <label class="col-form-label" for="startDate">@localizer["Desde"]</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-floating mb-3">
+                                                    <input id="endDate" type="text" class="form-control" placeholder="name@example.com">
+                                                    <label class="col-form-label" for="endDate">@localizer["Até"]</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            @Model.FirstName @Model.LastName &nbsp; <span class="badge text-bg-info">@Model.Roles[0]</span><br/>
+                                            @Model.Email<br/>
+                                            @if (!string.IsNullOrEmpty(Model.Loja))
+                                            {
+                                                <span>@localizer["Empresa"]: @Model.Empresa</span><br />
+                                                <span>@localizer["GrupoLoja"]: @Model.GrupoLoja</span><br />
+                                                <span>@localizer["Loja"]: @Model.Loja</span><br />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div id="viewAll" class="card-body table-responsive">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        @(await Component.InvokeAsync<ThemeViewComponent>())
+        @(await Component.InvokeAsync<FooterViewComponent>())
+        @(await Component.InvokeAsync<LogoutViewComponent>())
+
+    </div>
+
+
+    <partial name="_Scripts" />
+    @await Component.InvokeAsync("Notyf")
+
+    <script>
+
+        function loadData(id) {
+            $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+            $.busyLoadFull("show");
+            $('#viewAll').load('/admin/auditlog/LoadAll?id=' + id);
+        }
+
+        $(document).ready(function () {
+
+            var userId = @Html.Raw(Json.Serialize(Model.UserId));
+            //alert("document.ready userId = " + userId);
+
+            let startDate = document.getElementById('startDate')
+            let endDate = document.getElementById('endDate')
+
+            startDate.addEventListener('change', (e) => {
+                let startDateVal = e.target.value;
+                $('#auditlogTable').DataTable().draw();
+            })
+
+            endDate.addEventListener('change', (e) => {
+                let endDateVal = e.target.value;
+                $('#auditlogTable').DataTable().draw();
+            })
+
+            $('#startDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+            $('#endDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+
+            loadData(userId);
+            $('#reload').on('click', function () {
+                loadData(userId);
+            });
+
+            $('#cleanold').on('click', function () {
+                //alert("cleanold");
+                $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+                $.busyLoadFull("show");
+                var _url = "/admin/auditlog/OnPostClean";
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: _url,
+                        processData: false,
+                        contentType: false,
+                        success: function (data) {
+                            if (data.status == "success") {
+                                alert('@localizer["Todos os logs com mais de 6 meses foram removidos com sucesso."]');
+                                loadData();
+                            }
+                        },
+                        error: function () {
+                            alert("Error occurs");
+                            loadData();
+                        }
+                    }
+                );
+
+            });
+        });
+
+    </script>
+ 
+
+</body>
+</html>

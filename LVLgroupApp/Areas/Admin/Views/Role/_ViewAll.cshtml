@@ -1,0 +1,92 @@
+﻿@using LVLgroupApp.Areas.Admin.Models
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model IEnumerable<RoleViewModel>
+
+<table class="table table-striped" id="roleTable">
+    <thead>
+        <tr>
+            <th>
+                @localizer["Função"]
+            </th>
+            <th>
+                @localizer["Id"]
+            </th>
+
+            <th style="width:10%">
+                @localizer["Ações"]
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var role in Model)
+        {
+            <tr>
+                <td>
+                    @role.Name
+                </td>
+                <td>
+                    @role.Id
+                </td>
+                <td>
+                    <div class="btn-group dropend">
+                        <button id="dropdown_@role.Id" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @localizer["Ação"] <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_@role.Id">
+                            <li>
+                                <a onclick="jQueryModalGet('/admin/role/OnGetCreate?id=@role.Id','@localizer["Editar função"]', event, 'modal-md')" class="dropdown-item">
+                                    <i class="fas fa-pencil-alt"></i> @localizer["Editar"]
+                                </a>
+                            </li>
+                            <li>
+                                <form id="form_delete_@role.Id" asp-controller="Role" method="post" asp-action="OnPostDelete" asp-route-id="@role.Id" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover esta função?"]')" class="d-inline">
+                                    <a href="javascript:$('#form_delete_@role.Id').submit();" class="dropdown-item"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                </form>
+                            </li>
+                            <li>
+                                @if (role.Name != "SuperAdmin")
+                                {
+                                    <a style='margin-right:16px' asp-controller="Permission" asp-action="Index" asp-route-roleId="@role.Id" class="dropdown-item">
+                                        <i class="fas fa-wrench"></i> @localizer["Gestão de funções"]
+                                    </a>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#roleTable").DataTable();
+
+        $('#userTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $('#roleTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+
+    });
+</script>

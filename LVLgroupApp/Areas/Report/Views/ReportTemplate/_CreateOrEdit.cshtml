@@ -1,0 +1,525 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Report.Models.ReportTemplate
+@model ReportTemplateViewModel
+
+
+<style>
+
+    #container-perguntas {
+        min-height: 50px;
+        max-height: 500px;
+    }
+
+    #container-relatorio {
+        min-height: 100px;
+        max-height: 500px;
+    }
+
+    .question-card {
+        cursor: grab;
+    }
+
+        .question-card .order-badge {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+    .drop-target-over {
+        outline: 2px dashed #0d6efd;
+    }
+</style>
+
+
+
+@{
+    var dateFormat = localizer["dd/MM/yyyy"].Value;
+}
+
+
+@{
+    var aspAction = "OnPostCreate";
+
+    if (Model.Id == 0)
+    {
+        ViewData["Title"] = localizer["Criar novo Modelo de Relatório"];
+        ViewData["Caption"] = localizer["Adicionar perguntas para criar Modelo de Relatório."];
+    }
+    else
+    {
+        ViewData["Title"] = localizer["Editar Modelo de Relatório"];
+        ViewData["Caption"] = localizer["Alterar lista de perguntas do Modelo de Relatório."];
+
+        aspAction = "OnPostEdit";
+    }
+}
+
+
+
+<form id="create-reporttemplate-form" method="post" asp-area="Report" asp-controller="ReportTemplate" asp-action=@aspAction asp-route-id="@Model.Id" onsubmit="return jQueryPost(this, event);" enctype="multipart/form-data">
+
+
+    <input type="text" id="Id" name="Id"  asp-for="Id" class="form-control" hidden>
+    <input type="text" id="ReportTypeId" name="ReportTypeId" asp-for="ReportTypeId" class="form-control" hidden>
+
+    @* Hidden inputs gerados no servidor para o estado inicial do relatório (binding) *@
+    <div id="ServerGeneratedSelectedQuestionsInputs">
+        @{
+            var idx = 0;
+            var rtqs = Model.QuestionTemplateInReportList?.OrderBy(q => q.Order).ToList() ?? new List<ReportTemplateQuestionViewModel>();
+            foreach (var rtq in rtqs)
+            {
+                <input type="hidden" name="QuestionTemplateInReportList[@idx].Id" value="@rtq.Id" />
+                <input type="hidden" name="QuestionTemplateInReportList[@idx].ReportTemplateId" value="@rtq.ReportTemplateId" />
+                <input type="hidden" name="QuestionTemplateInReportList[@idx].QuestionTemplateId" value="@rtq.QuestionTemplateId" />
+                <input type="hidden" name="QuestionTemplateInReportList[@idx].QuestionTypeId" value="@rtq.QuestionTypeId" />
+                <input type="hidden" name="QuestionTemplateInReportList[@idx].Order" value="@rtq.Order" />
+                idx++;
+            }
+        }
+    </div>
+
+
+    <div class="card card-create-edit">
+
+        <div class="card-header p-2" id="card-header">
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input id="Name" name="Name" type="text" class="form-control" asp-for="@Model.Name">
+                        <label class="col-form-label" for="Name">@localizer["Nome do Modelo"]</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3 g-0">
+                <div class="col-lg-4 col-12">
+                    <div class="form-floating">
+                        <select name="SelectReportTypeId" class="form-select" id="SelectReportTypeId" asp-items="@Model.ReportTypes" data-placeholder='@localizer["Selecione um tipo de relatório"]'>
+                        </select>
+                        <label class="col-form-label" for="SelectReportTypeId">@localizer["Tipo de Relatório"]</label>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-12">
+                    <div class="form-floating">
+                        <input id="CreatedAt" name="CreatedAt" type="text" class="form-control" asp-for="CreatedAt" value="@Model.CreatedAt.ToShortDateString()" readonly>
+                        <label class="col-form-label" for="CreatedAt">@localizer["Criada em"]</label>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-12">
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input id="Version" name="Version" type="number" step="1" class="form-control" asp-for="@Model.Version" value="@Model.Version" readonly>
+                            <label class="col-form-label" for="Version">@localizer["Version"]</label>
+                        </div>
+                        <div class="form-floating">
+                            <input id="UsedInReports" name="UsedInReports" type="number" step="1" class="form-control" asp-for="@Model.UsedInReports" value="@Model.UsedInReports" readonly>
+                            <label class="col-form-label" for="UsedInReports">@localizer["Em Relatórios"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-2" id="card-body">
+
+            <div class="row">
+                <div class="col-12 col-lg-3">
+                    <div class="row mt-1">
+                        <div class="col-12">@localizer["Perguntas:"]</div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <div id="container-perguntas" class="p-2 border border-info border-2 overflow-auto" ondrop="dropHandlerQuestions(event)" ondragover="dragOverHandler(event)">
+
+                                @{
+                                    // ids já presentes no relatório (evitar duplicados)
+                                    var inReportIds = new HashSet<int>(Model.QuestionTemplateInReportList?.Select(x => x.QuestionTemplateId) ?? Enumerable.Empty<int>());
+
+                                    foreach (var qtvm in Model.QuestionTemplateList)
+                                    {
+                                        if (inReportIds.Contains(qtvm.Id))
+                                        {
+                                            // este card será renderizado no container-relatorios; ignorar aqui
+                                            continue;
+                                        }
+
+                                        // @qtvm = card de pergunta disponível para arrastar
+                                        <div class="card question-card border border-warning border-2 mb-2" id="qt-@qtvm.Id" data-qtemplate-id="@qtvm.Id" data-qtemplate-typeid="@qtvm.QuestionTypeId" data-rtq-id="0" data-rt-id="0" draggable="true" ondragstart="dragStartHandler(event)">
+                                            <div class="card-header d-flex align-items-center justify-content-between">
+                                                <h5 class="card-title">@qtvm.QuestionTypeName</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <h6 class="card-subtitle mb-2 text-body-secondary">
+                                                    @qtvm.QuestionText
+                                                </h6>
+                                            </div>
+                                        </div>
+
+                                    }
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-9">
+                    <div class="row mt-1">
+                        <div class="col-12">@localizer["Relatório:"]</div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <div id="container-relatorio" class="p-2 border border-primary border-2 overflow-auto" ondrop="dropHandlerRelatorio(event)" ondragover="dragOverHandler(event)">
+                                @* Renderizar cards já associados ao relatório, mantendo a ordem *@
+                                @{
+                                    var orderedRtqs = Model.QuestionTemplateInReportList?.OrderBy(q => q.Order).ToList() ?? new List<ReportTemplateQuestionViewModel>();
+                                    foreach (var rtq in orderedRtqs)
+                                    {
+                                        var qTemplate = Model.QuestionTemplateList?.FirstOrDefault(q => q.Id == rtq.QuestionTemplateId);
+                                        if (qTemplate == null) continue;
+
+                                        // @qTemplate = card de pergunta pertencente ao relatório
+                                        <div class="card question-card border border-success border-2 mb-2" id="qt-@qTemplate.Id" data-qtemplate-id="@qTemplate.Id" data-qtemplate-typeid="@qTemplate.QuestionTypeId" data-rtq-id="@rtq.Id" data-rt-id="@rtq.ReportTemplateId" draggable="true" ondragstart="dragStartHandler(event)">
+                                            <div class="card-header d-flex align-items-center justify-content-between">
+                                                <h5 class="card-title mb-0">@qTemplate.QuestionTypeName</h5>
+                                                <span class="order-badge badge bg-secondary ms-2">@rtq.Order</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <h6 class="card-subtitle mb-2 text-body-secondary">
+                                                    @qTemplate.QuestionText
+                                                </h6>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer p-2" id="card-footer">
+
+            <br/>
+
+            <div class="form-group justify-content-between" style="margin-bottom: 0px !important">
+                @if ((AuthorizationService.AuthorizeAsync(User, Permissions.ReportTemplate.Edit)).Result.Succeeded)
+                {
+                    <button type="submit" id="btnSubmit" class="btn btn-success">@localizer["Salvar Modelo de Relatório"]</button>
+                }
+                <button type="button" id="btnCancel" class="btn btn-secondary close-button">@localizer["Cancelar"]</button>
+                @if (Model.Id > 0)
+                {
+                    // <a asp-area="Report" asp-controller="ReportTemplate" asp-action="OnGetPrintPdf" asp-route-id="@Model.Id" class="btn float-lg-end btn-primary">
+                    //     <i class="fa fa-file-pdf"></i> @localizer["Print PDF"]
+                    // </a>
+                }
+            </div>
+        </div>
+
+    </div>
+
+
+
+</form>
+
+
+
+
+
+@section Scripts {
+
+    <!-- jquery-validation translated messages -->
+    @{
+        string messageFile = @localizer["messages_pt.js"].Value;
+        string url = "/lib/jquery-validation/" + messageFile;
+    }
+
+    <script type="text/javascript" src=@url></script>
+
+
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        // Drag start: guardar id do card
+        function dragStartHandler(ev) {
+            ev.dataTransfer.setData("text/plain", ev.target.id);
+            ev.dataTransfer.effectAllowed = "move";
+            console.log("dragStartHandler: dragging element id=" + ev.target.id);
+        }
+
+
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+
+            // highlight
+            var dropTarget = ev.currentTarget;
+            if (dropTarget && !dropTarget.classList.contains('drop-target-over')) {
+                dropTarget.classList.add('drop-target-over');
+            }
+            console.log("dragOverHandler: over element id=" + dropTarget.id);
+        }
+
+
+
+        // Drop no container-relatorio: inserir antes do card alvo se existir
+        function dropHandlerRelatorio(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drop-target-over');
+
+            var draggedId = ev.dataTransfer.getData("text/plain");
+            var dragged = document.getElementById(draggedId);
+            if (!dragged) return;
+
+            console.log("dropHandlerRelatorio: dropped element id=" + draggedId);
+
+            // Encontrar o elemento alvo dentro do container (pode ser um card)
+            var container = document.getElementById('container-relatorio');
+            var target = ev.target;
+
+            // subir até encontrar um card ou o container
+            while (target && target !== container && !target.classList.contains('question-card')) {
+                target = target.parentElement;
+                console.log("dropHandlerRelatorio: climbing to find question-card, current target id=" + (target ? target.id : 'null'));
+            }
+
+            console.log("dropHandlerRelatorio: final target id=" + (target ? target.id : 'null'));
+
+            if (target && target !== container && target.classList.contains('question-card')) {
+                // inserir antes do target
+                container.insertBefore(dragged, target);
+                console.log("dropHandlerRelatorio: inserted before target id=" + target.id);
+            } else {
+                // append se não houver card alvo
+                container.appendChild(dragged);
+                console.log("dropHandlerRelatorio: appended to container");
+            }
+
+
+            // atualizar inputs para POST
+            rebuildQuestionTemplateInReportInputs();
+        }
+
+
+
+        // Drop de volta para painel de perguntas
+        function dropHandlerQuestions(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drop-target-over');
+
+            var draggedId = ev.dataTransfer.getData("text/plain");
+            var dragged = document.getElementById(draggedId);
+            if (!dragged) return;
+
+            var container = document.getElementById('container-perguntas');
+            var target = ev.target;
+
+            // garantir append ao final (simples)
+            container.appendChild(dragged);
+
+            // atualizar inputs para POST (remover o item)
+            rebuildQuestionTemplateInReportInputs();
+        }
+
+
+
+        // Reconstrói os hidden inputs QuestionTemplateInReportList[*] com a ordem atual do container-relatorio
+        function rebuildQuestionTemplateInReportInputs() {
+            var container = document.getElementById('container-relatorio');
+            var inputsWrapperServer = document.getElementById('ServerGeneratedSelectedQuestionsInputs');
+            var inputsWrapper = document.getElementById('ServerGeneratedSelectedQuestionsInputs');
+
+            // Se não existir, criar wrapper
+            if (!inputsWrapper) {
+                inputsWrapper = document.createElement('div');
+                inputsWrapper.id = 'ServerGeneratedSelectedQuestionsInputs';
+                document.querySelector('form').appendChild(inputsWrapper);
+            }
+
+            // Limpar todos os inputs atuais
+            inputsWrapper.innerHTML = '';
+
+
+            // container-perguntas:
+            // id="qt-qtvm.Id" data-qtemplate-id="qtvm.Id"
+            // data-qtemplate-typeid="qtvm.QuestionTypeId"
+            // data-rtq-id="0" data-rt-id="0"
+
+            // container-relatorio:
+            // id="qt-qTemplate.Id" data-qtemplate-id="qTemplate.Id"
+            // data-qtemplate-typeid="qTemplate.QuestionTypeId" 
+            // data-rtq-id="rtq.Id" data-rt-id="rtq.ReportTemplateId"
+
+
+            var cards = container.querySelectorAll('.question-card');
+            cards.forEach(function(card, idx) {
+                var qTemplateId = card.dataset.templateId || card.getAttribute('data-qtemplate-id');
+                var qTypeId = card.dataset.questionTypeId || card.getAttribute('data-qtemplate-typeid');
+                var rtqId = card.dataset.rtqId || card.getAttribute('data-rtq-id') || 0;
+                var reportTemplateId = document.getElementById('Id') ? document.getElementById('Id').value || 0 : 0;
+
+                // criar inputs com nomes para binding: QuestionTemplateInReportList[index].Property
+                var inputs = [
+                    { name: 'QuestionTemplateInReportList[' + idx + '].Id', value: rtqId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].ReportTemplateId', value: reportTemplateId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].QuestionTemplateId', value: qTemplateId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].QuestionTypeId', value: qTypeId },
+                    { name: 'QuestionTemplateInReportList[' + idx + '].Order', value: (idx + 1) }
+                ];
+
+                inputs.forEach(function(it) {
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = it.name;
+                    inp.value = it.value;
+                    inputsWrapper.appendChild(inp);
+                });
+
+                // atualizar badge de ordem no card
+                var badge = card.querySelector('.order-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'order-badge badge bg-secondary ms-2';
+                    // var title = card.querySelector('.card-header .card-title');
+                    // if (title) title.appendChild(badge);
+                    var hd = card.querySelector('.card-header');
+                    if (hd) hd.appendChild(badge);
+                }
+                badge.textContent = (idx + 1);
+            });
+            // Remover badges de cards que ficaram no painel de perguntas
+            var allCards = document.querySelectorAll('.question-card');
+            allCards.forEach(function(c) {
+                if (!document.getElementById('container-relatorio').contains(c)) {
+                    var b = c.querySelector('.order-badge');
+                    if (b) b.remove();
+                }
+            });
+        }
+
+
+
+    </script>
+
+
+
+
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        $(document).ready(function () {
+
+
+            //------------------------- Client validation ----------------------------
+
+
+
+            $("#create-reporttemplate-form").removeData("validator");
+
+
+            $("#create-reporttemplate-form").validate({
+                rules: {
+                    Name: {
+                        required: true
+                    }
+                },
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                },
+                highlight: function (element) {
+                    $(element).removeClass('is-valid').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+
+
+            jQueryPost = (form, event) => {
+                var isvalid = $(form).valid();
+                if (!isvalid) {
+                    event.preventDefault();
+                    console.log("form : not submited.");
+                    return false;
+                }
+                console.log("form : submited.");
+                return true;
+            };
+
+
+
+            //------------------------- Inicializar draggable cards ----------------------------
+
+
+            $("#SelectReportTypeId").on("change", function () {
+                let _typeId =  $("#SelectReportTypeId").val();
+                $("#ReportTypeId").val(_typeId);
+                console.log('TypeId changed = ' + $("#ReportTypeId").val());
+            });
+
+
+
+            //------------------------- Inicializar draggable cards ----------------------------
+
+
+            // adicionar event listeners aos cards de pergunta
+            var allCards = document.querySelectorAll('.question-card');
+            allCards.forEach(function(card) {
+                card.addEventListener('dragstart', dragStartHandler);
+                console.log("card eventlistener added.");
+            });
+
+
+
+
+            //------------------------- Inicializar button Cancel ----------------------------
+
+
+            $("#btnCancel").on('click', function () {
+                console.log("EventListener : #btnCancel clicked.");
+
+                var _id = $('#id').val();
+
+                var _url = "/Report/ReportTemplate/OnPostCancel?id=" + _id;
+                var formData = new FormData();
+                formData.append("id", _id);
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: _url,
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        success: function (response) {
+                            // Redirect to the specified URL
+                            window.location.href = response.redirectToUrl;
+                        },
+                        error: function () {
+                            alert("Error occurs");
+                        }
+                    }
+                );
+            });
+
+            document.getElementById('btnSubmit').addEventListener('click', function() {
+                //this.disabled = true
+                // continuar com o submit
+            });
+
+        });
+
+    </script>
+
+}

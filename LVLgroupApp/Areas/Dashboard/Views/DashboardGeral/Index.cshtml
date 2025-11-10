@@ -1,0 +1,49 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Dashboard Geral"];
+    ViewData["Caption"] = localizer["Métricas gerais"];
+}
+
+
+<style>
+    .wrap {
+        position: relative;
+    }
+
+        .wrap #reload {
+            position: absolute;
+            top: -70px;
+            right: 15px;
+        }
+</style>
+
+
+<div class="row wrap">
+    <div class="col-lg-10"></div>
+    <div class="col-lg-2">
+        <a id="reload" class="btn btn-primary text-white mb-3">
+            <i class="fa fas fa-bolt"></i>
+            @localizer["Recarregar"]
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div id="dashboardGeral" class="card-body">
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script>
+        $(document).ready(function () {
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+        });
+        function loadData() {
+            $('#dashboardGeral').load('/dashboard/dashboardgeral/LoadAll');
+        }
+    </script>
+}

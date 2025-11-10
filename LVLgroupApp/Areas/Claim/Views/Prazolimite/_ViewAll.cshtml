@@ -1,0 +1,215 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Claim.Models.Prazolimite
+@model IEnumerable<PrazolimiteViewModel>
+
+<table id="prazolimiteTable" class="table table-striped dt-responsive nowrap display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["Alarme"]</th>
+            <th>@localizer["Limite mínimo"]</th>
+            <th>@localizer["Limite máximo"]</th>
+            @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Delete)).Result.Succeeded
+               || (AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Edit)).Result.Succeeded)
+            {
+                <th>@localizer["Ações"]</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var prazolimite in Model)
+        {
+        <tr>
+            <td>
+                @prazolimite.Id
+            </td>
+            <td class="align-middle">
+                <h5 style="margin-bottom: -2px;">
+                    <span class="badge" style="background-color: @prazolimite.Corfundo; color: @prazolimite.Cortexto; padding: 8px 20px 6px 20px;">
+                        @prazolimite.Alarme
+                    </span>
+                </h5>
+            </td>
+            <td>
+                @prazolimite.LimiteMin
+            </td>
+            <td>
+                @prazolimite.LimiteMax
+            </td>
+            @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Delete)).Result.Succeeded
+                ||    (AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Edit)).Result.Succeeded)
+            {
+                <td text-right">
+                    <div class="btn-group">
+                        <button id="dropdown_@prazolimite.Id" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @localizer["Ação"]
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_@prazolimite.Id">
+                            <li>
+                                @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Edit)).Result.Succeeded)
+                                {
+                                    <a onclick="jQueryModalGet('/claim/prazolimite/OnGetCreateOrEdit?id=@prazolimite.Id','@localizer["Editar prazo limite"]', event, 'modal-lg')" class="dropdown-item"><i class="fas fa-pencil-alt"></i>  @localizer["Editar"]</a>
+                                }
+                            </li>
+                            <li>
+                                @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Prazoslimite.Delete)).Result.Succeeded)
+                                {
+                                    <form id="form_delete_@prazolimite.Id" asp-area="Claim" asp-controller="Prazolimite" method="post" asp-action="OnPostDelete" asp-route-id="@prazolimite.Id" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover este prazo limite?"]')">
+                                        <a href="javascript:$('#form_delete_@prazolimite.Id').submit();" class="dropdown-item"><i class="fas fa-trash-alt"></i>  @localizer["Remover"]</a>
+                                    </form>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+
+    $(document).ready(function () {
+
+        var logo = getLVLlogo('logo-lvl-dark.png');
+
+        var options = {
+            isEnabled: true,
+            saveState: false
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        var table = $("#prazolimiteTable").DataTable({
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'portrait',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de prazos limite"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'portrait',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de prazos limite"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'portrait',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de prazos limite"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'portrait',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de prazos limite"]'
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>',
+                }
+            ],
+            order: [[0, "desc"]],
+            columnDefs: [
+                { visible: false, targets: [0] }
+            ]
+        });
+
+        $('#prazolimiteTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
+
+        $('#prazolimiteTable tbody').on('dblclick', 'tr', function () {
+            $(this).addClass('selected');
+            var data = table.row(this).data();
+            //alert('You clicked on ' + data[0] + '\'s row');
+            jQueryModalGet('/claim/prazolimite/OnGetCreateOrEdit?id=' + data[0], '@localizer["Editar prazo limite"]', event, 'modal-lg')
+        });
+
+        $('#prazolimiteTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        function getLVLlogo(logoName) {
+
+            let _logoName = logoName;
+            let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+            let formData = new FormData();
+            formData.append("logoName", _logoName);
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status == "success") {
+                            logo = data.logoBase64;
+                            //alert(logo);
+                        }
+                    },
+                    error: function () {
+                        alert("getLVLlogo: Error occurs");
+                    }
+                }
+            );
+
+        };
+
+    });
+
+</script>

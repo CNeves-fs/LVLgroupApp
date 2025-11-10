@@ -1,0 +1,623 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Reclamações"];
+    ViewData["Caption"] = localizer["Configure aqui as suas reclamações."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Claim.Models.Claim
+@model ClaimViewModel
+
+<style>
+    .form-group > .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        <div class="row">
+            <div class="col-sm-4">
+                @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Claims.Create)).Result.Succeeded)
+                {
+                    <a asp-area="Claim" asp-controller="Claim" asp-action="OnGetCreate" class="btn btn-success mb-3">
+                        <i class="fa fa-plus-square"></i> @localizer["Criar"]
+                    </a>
+                }
+                <a id="reload" class="btn btn-primary text-white mb-3">
+                    <i class="fa fas fa-bolt"></i>
+                    @localizer["Recarregar"]
+                </a>
+            </div>
+            <div class="col-sm-8">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-floating mb-3">
+                            <input id="startDate" type="text" class="form-control" placeholder="name@example.com">
+                            <label class="col-form-label" for="startDate">@localizer["Desde"]</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-floating mb-3">
+                            <input id="endDate" type="text" class="form-control" placeholder="name@example.com">
+                            <label class="col-form-label" for="endDate">@localizer["Até"]</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="form-floating mb-3">
+                            <select name="StatusFilterId" class="form-select" id="StatusFilterId" data-placeholder='@localizer["Selecione um status"]'>
+                            </select>
+                            <label class="col-form-label" for="StatusFilterId">@localizer["Status"]</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-floating mb-3">
+                            <select name="PrazosFilterId" class="form-select" id="PrazosFilterId" data-placeholder='@localizer["Selecione um prazo limite"]'>
+                            </select>
+                            <label class="col-form-label" for="PrazosFilterId">@localizer["Prazos limite"]</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="form-group">
+                            <label class="col-form-label">@localizer["Numero de dias para fecho"]</label>
+                            <div class="slider-2 mb-3" id="SliderNumeroDiasParaFecho" style="margin-top: 36px;">
+                                <div>
+                                    <div class="inverse-left"></div>
+                                    <div class="inverse-right"></div>
+                                    <div class="range-2"></div>
+                                    <span class="thumb-2 left"></span>
+                                    <span class="thumb-2 right"></span>
+                                    <div class="sign-2 left">
+                                        <span id="value-left"></span>
+                                    </div>
+                                    <div class="sign-2 right">
+                                        <span id="value-right"></span>
+                                    </div>
+                                </div>
+                                <input type="range" id="input-left-2" value="-30" min="-30" max="30" step="1" />
+                                <input type="range" id="input-right-2" value="30" min="-30" max="30" step="1" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+
+        var PrazosLimite = [
+            {
+                "Id": "0",
+                "Alarme": "@localizer["Todos os prazos limite"]",
+                "LimiteMin": "-1",
+                "LimiteMax": "-1",
+                "Cortexto": "black",
+                "Corfundo": "white"
+            },
+            {
+                "Id": "1000",
+                "Alarme": "@localizer["FECHADA"]",
+                "LimiteMin": "-1",
+                "LimiteMax": "-1",
+                "Cortexto": "lightgray",
+                "Corfundo": "gray"
+            },
+            {
+                "Id": "2000",
+                "Alarme": "@localizer["NÃO FECHADA"]",
+                "LimiteMin": "-1",
+                "LimiteMax": "-1",
+                "Cortexto": "white",
+                "Corfundo": "green"
+            }
+        ];
+
+        var StatusArr = [
+            {
+                "Id": "0",
+                "Texto": "@localizer["Todos os status"]",
+                "Tipo": "0",
+                "Cortexto": "black",
+                "Corfundo": "white"
+            }
+        ];
+
+        function mapStateToStatus(state) {
+            //var _status = StatusArr[JSON.parse(state.id) - 1];
+            for (let i = 0; i < StatusArr.length; i++) {
+                if (StatusArr[i].Texto === state.text)
+                {
+                    return StatusArr[i];
+                }
+            }
+            return null;
+        };
+
+        function formatStatusState(state) {
+
+            //str1 = JSON.stringify(state, null, 4); // (Optional) beautiful indented output.
+            //console.log("state: " + str1); // Logs output to dev tools console.
+
+            if (!state.id) {
+                return state.text;
+            }
+            if (state.id == 0) {
+                return state.text;
+            }
+
+            //var _status = StatusArr[JSON.parse(state.id) - 1];
+            var _status = mapStateToStatus(state);
+            //str = JSON.stringify(_status, null, 4); // (Optional) beautiful indented output.
+            //console.log("_status: " + str); // Logs output to dev tools console.
+
+            var $state = $(
+                `<h5>
+                    <span class="badge" style="background-color: ${_status.Corfundo}; color: ${_status.Cortexto}; padding-top: 6px;">
+                        ${_status.Texto}
+                    </span>
+                </h5>`
+            );
+            return $state;
+        };
+
+        function mapStateToPrazo(state) {
+            //var _prazo = PrazosLimite[JSON.parse(state.id) + 2];
+            for (let i = 0; i < PrazosLimite.length; i++) {
+                if (PrazosLimite[i].Id === JSON.parse(state.id)) 
+                {
+                    return PrazosLimite[i];
+                }
+            }
+            return null;
+        };
+
+        function formatPrazoState(state) {
+
+            if (!state.id) {
+                return state.text;
+            }
+            if (state.id == 0) {
+                return state.text;
+            }
+            if (state.id == 1000) {
+                var $nostate1000 = $(
+                    `<h5>
+                        <span class="badge" style="background-color:lightgray; color:gray; padding: 6px 20px 6px 20px;">
+                            @localizer["FECHADA"]
+                        </span>
+                    </h5>`
+                );
+                return $nostate1000;
+            };
+            if (state.id == 2000) {
+                var $nostate2000 = $(
+                    `<h5>
+                        <span class="badge" style="background-color:green; color:lightgray; padding: 6px 20px 6px 20px;">
+                            @localizer["NÃO FECHADA"]
+                        </span>
+                    </h5>`
+                );
+                return $nostate2000;
+            };
+
+            //var _prazo = PrazosLimite[JSON.parse(state.id) + 2];
+            var _prazo = mapStateToPrazo(state);
+            var $state = $(
+                `<h5>
+                    <span class="badge" style="background-color: ${_prazo.Corfundo}; color: ${_prazo.Cortexto}; padding: 6px 20px 6px 20px;">
+                        ${_prazo.Alarme}
+                    </span>
+                </h5>`
+            );
+            return $state;
+        };
+
+        function getAllPrazosLimite() {
+
+            let _url = "/Claim/Prazolimite/LoadPrazoslimite";
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        //str = JSON.stringify(data.prazoslimitelist, null, 4); // (Optional) beautiful indented output.
+                        //console.log("Prazos data: " + str); // Logs output to dev tools console.
+                        var _list = JSON.parse(data.prazoslimitelist);// ???
+                        $('#PrazosFilterId').find('option').remove();
+
+                        let option0 = document.createElement('option');
+                        $(option0).val(0).text('@localizer["Todos os prazos limite"]');
+                        $(option0).attr('data-LimiteMin', -1);
+                        $(option0).attr('data-LimiteMax', -1);
+                        $(option0).attr('data-Cortexto', 'var(--bs-body-color)');
+                        $(option0).attr('data-Corfundo', 'var(--bs-body-bg)');
+                        $(option0).appendTo("#PrazosFilterId");
+
+                        let option1000 = document.createElement('option');
+                        $(option1000).val(1000).text('@localizer["FECHADA"]');
+                        $(option1000).attr('data-LimiteMin', -1);
+                        $(option1000).attr('data-LimiteMax', -1);
+                        $(option1000).attr('data-Cortexto', 'lightgray');
+                        $(option1000).attr('data-Corfundo', 'gray');
+                        $(option1000).appendTo("#PrazosFilterId");
+
+                        let option2000 = document.createElement('option');
+                        $(option2000).val(2000).text('@localizer["NÃO FECHADA"]');
+                        $(option2000).attr('data-LimiteMin', -1);
+                        $(option2000).attr('data-LimiteMax', -1);
+                        $(option2000).attr('data-Cortexto', 'lightgray');
+                        $(option2000).attr('data-Corfundo', 'green');
+                        $(option2000).appendTo("#PrazosFilterId");
+
+                        $(_list).each(function () {
+                            
+                            //alert("option text = " + this.Text);
+                            //alert("option value = " + this.Value);
+                            //str = JSON.stringify(this, null, 4); // (Optional) beautiful indented output.
+                            //console.log("option: " + str); // Logs output to dev tools console.
+
+                            PrazosLimite.push(this);
+
+                            let option = document.createElement('option');
+                            $(option).val(this.Id).text(this.Alarme);
+                            $(option).attr('data-LimiteMin', this.LimiteMin);
+                            $(option).attr('data-LimiteMax', this.LimiteMax);
+                            $(option).attr('data-Cortexto', this.Cortexto);
+                            $(option).attr('data-Corfundo', this.Corfundo);
+                            $(option).appendTo("#PrazosFilterId");
+                        });
+
+                        var currentPrazoLimiteId = localStorage.getItem("currentPrazoLimiteId");
+                        if (currentPrazoLimiteId !== null) {
+
+                            if ($('#PrazosFilterId').find("option[value='" + currentPrazoLimiteId + "']").length) {
+                                $('#PrazosFilterId').val(currentPrazoLimiteId).trigger('change');
+                            }
+
+                            console.log("currentPrazoLimiteId = " + currentPrazoLimiteId);
+                        };
+
+                        //str1 = JSON.stringify(PrazosLimite, null, 4); // (Optional) beautiful indented output.
+                        //console.log("Prazosarray: " + str1); // Logs output to dev tools console.
+                    },
+                    error: function () {
+                        alert("getAllPrazosLimite: Error occurs");
+                    }
+                }
+            );
+        };
+
+        function getAllStatus() {
+
+            let _url = '/Claim/Status/LoadStatus';
+
+            $.ajax(
+                {
+                    type: "POST",
+                    url: _url,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        //str = JSON.stringify(data.statuslist, null, 4); // (Optional) beautiful indented output.
+                        //console.log("Status data: " + str); // Logs output to dev tools console.
+                        var _list = JSON.parse(data.statuslist);// ???
+                        $('#StatusFilterId').find('option').remove();
+
+                        let option0 = document.createElement('option');
+                        $(option0).val(0).text('@localizer["Todos os status"]');
+                        $(option0).attr('data-Tipo', 0);
+                        $(option0).attr('data-Cortexto', 'var(--bs-body-color)');
+                        $(option0).attr('data-Corfundo', 'var(--bs-body-bg)');
+                        $(option0).appendTo("#StatusFilterId");
+
+                        $(_list).each(function () {
+                            
+                            //alert("option text = " + this.Texto);
+                            //alert("option value = " + this.Id);
+                            //str = JSON.stringify(this, null, 4); // (Optional) beautiful indented output.
+                            //console.log("status option: " + str); // Logs output to dev tools console.
+
+                            StatusArr.push(this);
+
+                            let option = document.createElement('option');
+                            $(option).val(this.Id).text(this.Texto);
+                            $(option).attr('data-Tipo', this.Tipo);
+                            $(option).attr('data-Cortexto', this.Cortexto);
+                            $(option).attr('data-Corfundo', this.Corfundo);
+                            $(option).appendTo("#StatusFilterId");
+                        });
+
+                        var currentStatusId = localStorage.getItem("currentStatusId");
+                        if (currentStatusId !== null) {
+
+                            if ($('#StatusFilterId').find("option[value='" + currentStatusId + "']").length) {
+                                $('#StatusFilterId').val(currentStatusId).trigger('change');
+                            }
+
+                            console.log("currentStatusId = " + currentStatusId);
+                        };
+
+                        //str1 = JSON.stringify(StatusArr, null, 4); // (Optional) beautiful indented output.
+                        //console.log("Status array: " + str1); // Logs output to dev tools console.
+                    },
+                    error: function () {
+                        alert("getAllStatus: Error occurs");
+                    }
+                }
+            );
+        };
+
+        function loadData() {
+            $('#viewAll').load('/claim/claim/LoadAll');
+        }
+
+        $(document).ready(function () {
+
+            // inicializar start date
+            $('#startDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+            var startDate = document.getElementById('startDate');
+            var currentStartDateVal = localStorage.getItem("currentStartDateVal");
+            if (currentStartDateVal !== null) {
+
+                $('#startDate').val(currentStartDateVal);
+                console.log("currentStartDateVal = " + currentStartDateVal);
+            };
+            startDate.addEventListener('change', (e) => {
+                let startDateVal = e.target.value;
+                if (startDateVal === null || startDateVal === "") {
+                    localStorage.removeItem("currentStartDateVal");
+                }
+                else {
+                    localStorage.setItem("currentStartDateVal", startDateVal);
+                }
+
+                $('#claimTable').DataTable().draw();
+            })
+
+
+            // inicializar end date
+            $('#endDate').flatpickr({
+                dateFormat: '@localizer["d-m-Y"]',
+                locale: '@localizer["pt"]'
+            });
+            var endDate = document.getElementById('endDate');
+            var currentEndDateVal = localStorage.getItem("currentEndDateVal");
+            if (currentEndDateVal !== null) {
+
+                $('#endDate').val(currentEndDateVal);
+                console.log("currentEndDateVal = " + currentEndDateVal);
+            };
+            endDate.addEventListener('change', (e) => {
+                let endDateVal = e.target.value;
+                if (endDateVal === null || endDateVal === "") {
+                    localStorage.removeItem("currentEndDateVal");
+                }
+                else {
+                    localStorage.setItem("currentEndDateVal", endDateVal);
+                }
+
+                $('#claimTable').DataTable().draw();
+            })
+
+
+            // inicializar prazos limite
+            getAllPrazosLimite();
+            $("#PrazosFilterId").select2({
+                theme: "bootstrap-5",
+                processResults: function (result) {
+                    //str1 = JSON.stringify(result, null, 4); // (Optional) beautiful indented output.
+                    //console.log("result: " + str1); // Logs output to dev tools console.
+                    return {
+                        results: $.map(result, function (item) {
+                            //str2 = JSON.stringify(item, null, 4); // (Optional) beautiful indented output.
+                            //console.log("item: " + str2); // Logs output to dev tools console.
+                            return {
+                                id: item.Id,
+                                text: "",
+                                backgroundColor: item.Corfundo,
+                                textColor: item.Cortexto
+                            };
+                        }),
+                    };
+                },
+                templateResult: formatPrazoState,
+                templateSelection: formatPrazoState,
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+            $("#PrazosFilterId").on("change", function () {
+
+                var pLimite = $('#PrazosFilterId').val();
+                if (pLimite === null || pLimite === "") {
+                    localStorage.setItem("currentPrazoLimiteId", "0");
+                }
+                else {
+                    localStorage.setItem("currentPrazoLimiteId", pLimite);
+                }
+
+                $('#claimTable').DataTable().draw();
+            });
+
+
+            // incializar status
+            getAllStatus();
+            $("#StatusFilterId").select2({
+                theme: "bootstrap-5",
+                processResults: function (result) {
+                    //str1 = JSON.stringify(result, null, 4); // (Optional) beautiful indented output.
+                    //console.log("status result: " + str1); // Logs output to dev tools console.
+                    return {
+                        results: $.map(result, function (item) {
+                            //str2 = JSON.stringify(item, null, 4); // (Optional) beautiful indented output.
+                            //console.log("status item: " + str2); // Logs output to dev tools console.
+                            return {
+                                id: item.Id,
+                                text: "",
+                                backgroundColor: item.Corfundo,
+                                textColor: item.Cortexto
+                            };
+                        }),
+                    };
+                },
+                templateResult: formatStatusState,
+                templateSelection: formatStatusState,
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+            $("#StatusFilterId").on("change", function () {
+
+                var currentStatusId = $('#StatusFilterId').val();
+                if (currentStatusId == null || currentStatusId == "")
+                {
+                    localStorage.setItem("currentStatusId", "0");
+                }
+                else
+                {
+                    localStorage.setItem("currentStatusId", currentStatusId);
+                }
+
+                $('#claimTable').DataTable().draw();
+            });
+
+
+
+            // ------------------- slider ------------------------
+
+
+
+            var inputLeft2 = document.getElementById("input-left-2");
+            var inputRight2 = document.getElementById("input-right-2");
+
+            var thumbLeft2 = document.querySelector(".slider-2 > div > .thumb-2.left");
+            var thumbRight2 = document.querySelector(".slider-2 > div > .thumb-2.right");
+            var range2 = document.querySelector(".slider-2 > div > .range-2");
+            var signLeft2 = document.querySelector(".slider-2 > div > .sign-2.left");
+            var signRight2 = document.querySelector(".slider-2 > div > .sign-2.right");
+            var signValueLeft2 = document.querySelector(".slider-2 > div > .sign-2.left > span");
+            var signValueRight2 = document.querySelector(".slider-2 > div > .sign-2.right > span");
+
+
+            var currentLeftNumDias = localStorage.getItem("currentLeftNumDias");
+            if (currentLeftNumDias !== null) {
+
+                $('#input-left-2').val(currentLeftNumDias);
+                console.log("currentLeftNumDias = " + currentLeftNumDias);
+            };
+            function setLeftValue2() {
+                var _this = inputLeft2,
+                    min = parseInt(_this.min),
+                    max = parseInt(_this.max);
+
+                _this.value = Math.min(parseInt(_this.value), parseInt(inputRight2.value) - 1);
+                console.log("setLeftValue2 val = " + _this.value);
+
+                var percent = ((_this.value - min) / (max - min)) * 100;
+                console.log("setLeftValue2 percent = " + percent + "%");
+
+                thumbLeft2.style.left = percent + "%";
+                signLeft2.style.left = percent + "%";
+                signValueLeft2.innerHTML = _this.value;
+                range2.style.left = percent + "%";
+                range2.style.backgroundColor = $("#CorfundoPicker").val();
+
+                let currentLeftNumDias = $('#input-left-2').val();
+                if (currentLeftNumDias == null || currentLeftNumDias == "") {
+                    localStorage.removeItem("currentLeftNumDias");
+                }
+                else
+                {
+                    localStorage.setItem("currentLeftNumDias", currentLeftNumDias);
+                }
+
+                $('#claimTable').DataTable().draw();
+            }
+            setLeftValue2();
+
+            var currentRightNumDias = localStorage.getItem("currentRightNumDias");
+            if (currentRightNumDias !== null) {
+
+                $('#input-right-2').val(currentRightNumDias);
+                console.log("currentRightNumDias = " + currentRightNumDias);
+            };
+            function setRightValue2() {
+                var _this = inputRight2,
+                    min = parseInt(_this.min),
+                    max = parseInt(_this.max);
+
+                _this.value = Math.max(parseInt(_this.value), parseInt(inputLeft2.value) + 1);
+                console.log("setRighttValue2 val=" + _this.value);
+
+                var percent = ((_this.value - min) / (max - min)) * 100;
+                console.log("setRightValue2 percent = " + percent + "%");
+
+                thumbRight2.style.left = percent + "%";
+                signRight2.style.left = percent + "%";
+                signValueRight2.innerHTML = _this.value;
+                range2.style.right = (100 - percent) + "%";
+
+                let currentRightNumDias = $('#input-right-2').val();
+                if (currentRightNumDias == null || currentRightNumDias == "") {
+                    localStorage.removeItem("currentRightNumDias");
+                }
+                else
+                {
+                    localStorage.setItem("currentRightNumDias", currentRightNumDias);
+                }
+
+                $('#claimTable').DataTable().draw();
+            }
+            setRightValue2();
+
+
+            inputLeft2.addEventListener("input", setLeftValue2);
+            inputRight2.addEventListener("input", setRightValue2);
+
+            inputLeft2.addEventListener("mousedown", function () {
+                thumbLeft2.classList.add("active");
+            });
+            inputLeft2.addEventListener("mouseup", function () {
+                thumbLeft2.classList.remove("active");
+            });
+
+            inputRight2.addEventListener("mousedown", function () {
+                thumbRight2.classList.add("active");
+            });
+            inputRight2.addEventListener("mouseup", function () {
+                thumbRight2.classList.remove("active");
+            });
+
+
+            $("#claimTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+
+        });
+
+    </script>
+}

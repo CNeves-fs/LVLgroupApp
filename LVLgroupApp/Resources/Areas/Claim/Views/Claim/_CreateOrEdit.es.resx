@@ -1,0 +1,366 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="A edição da reclamação foi cancelada." xml:space="preserve">
+    <value>Se ha cancelado la edición de la reclamación.</value>
+  </data>
+  <data name="Agrupamento de lojas" xml:space="preserve">
+    <value>Agrupación de tiendas</value>
+  </data>
+  <data name="Aprovação" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="Artigo" xml:space="preserve">
+    <value>Artículo</value>
+  </data>
+  <data name="Artigo1" xml:space="preserve">
+    <value>Artículo</value>
+  </data>
+  <data name="Cancelar" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Cliente" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="Cor" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Criar artigo" xml:space="preserve">
+    <value>Crear articulo</value>
+  </data>
+  <data name="Criar cliente" xml:space="preserve">
+    <value>Crear cliente</value>
+  </data>
+  <data name="Criar nova reclamação" xml:space="preserve">
+    <value>Crear una nueva reclamación</value>
+  </data>
+  <data name="Código" xml:space="preserve">
+    <value>Código</value>
+  </data>
+  <data name="d-m-Y" xml:space="preserve">
+    <value>d-m-Y</value>
+  </data>
+  <data name="d-m-Y1" xml:space="preserve">
+    <value>d-m-Y</value>
+  </data>
+  <data name="d-m-Y2" xml:space="preserve">
+    <value>d-m-Y</value>
+  </data>
+  <data name="d-m-Y3" xml:space="preserve">
+    <value>d-m-Y</value>
+  </data>
+  <data name="Data" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="Data da compra" xml:space="preserve">
+    <value>Fecha de compra</value>
+  </data>
+  <data name="Data da reclamação" xml:space="preserve">
+    <value>Fecha de la reclamación</value>
+  </data>
+  <data name="Data entrada no Portal" xml:space="preserve">
+    <value>Fecha de entrada en el Portal</value>
+  </data>
+  <data name="Data fecho" xml:space="preserve">
+    <value>Fecha de cierre</value>
+  </data>
+  <data name="Data limite" xml:space="preserve">
+    <value>Fecha limite</value>
+  </data>
+  <data name="Data reclamação" xml:space="preserve">
+    <value>Fecha reclamación</value>
+  </data>
+  <data name="dd/mm/yy" xml:space="preserve">
+    <value>dd/mm/yy</value>
+  </data>
+  <data name="dd/mm/yy1" xml:space="preserve">
+    <value>dd/mm/yy</value>
+  </data>
+  <data name="dd/mm/yy2" xml:space="preserve">
+    <value>dd/mm/yy</value>
+  </data>
+  <data name="dd/MM/yyyy" xml:space="preserve">
+    <value>dd/MM/yyyy</value>
+  </data>
+  <data name="Decisão final" xml:space="preserve">
+    <value>Decisión definitiva</value>
+  </data>
+  <data name="Defeito do artigo" xml:space="preserve">
+    <value>Defecto del artículo</value>
+  </data>
+  <data name="Descrição" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="Devolução do dinheiro" xml:space="preserve">
+    <value>Devolución de dinero</value>
+  </data>
+  <data name="dias após compra!" xml:space="preserve">
+    <value>días después de la compra!</value>
+  </data>
+  <data name="dias após compra!1" xml:space="preserve">
+    <value> días después de la compra!</value>
+  </data>
+  <data name="Editar formulário da reclamação." xml:space="preserve">
+    <value>Editar formulario de reclamación.</value>
+  </data>
+  <data name="Editar reclamação" xml:space="preserve">
+    <value>Editar reclamación.</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Empresa" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="Empresa1" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="Fecho em loja" xml:space="preserve">
+    <value>Cerrar en tienda</value>
+  </data>
+  <data name="Fotos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="Género" xml:space="preserve">
+    <value>Gênero</value>
+  </data>
+  <data name="IBAN" xml:space="preserve">
+    <value>IBAN</value>
+  </data>
+  <data name="Loja" xml:space="preserve">
+    <value>Tienda</value>
+  </data>
+  <data name="MANTER STATUS DA RECLAMAÇÃO" xml:space="preserve">
+    <value>MANTENER EL STATUS DE LA RECLAMACIÓN</value>
+  </data>
+  <data name="meses após compra!" xml:space="preserve">
+    <value>meses después de la compra!</value>
+  </data>
+  <data name="meses após compra!1" xml:space="preserve">
+    <value> meses después de la compra!</value>
+  </data>
+  <data name="messages_pt.js" xml:space="preserve">
+    <value>messages_es.js</value>
+  </data>
+  <data name="Morada" xml:space="preserve">
+    <value>Dirección</value>
+  </data>
+  <data name="NIF" xml:space="preserve">
+    <value>NIF</value>
+  </data>
+  <data name="Nome" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Nota de crédito" xml:space="preserve">
+    <value>Nota de crédito</value>
+  </data>
+  <data name="Opinião do cliente" xml:space="preserve">
+    <value>Opinión del cliente</value>
+  </data>
+  <data name="Parecer de administrador" xml:space="preserve">
+    <value>Opinión del administrador</value>
+  </data>
+  <data name="Parecer de colaborador" xml:space="preserve">
+    <value>Opinión del empleado</value>
+  </data>
+  <data name="Parecer de gerente de loja" xml:space="preserve">
+    <value>Opinión del gerente de tienda</value>
+  </data>
+  <data name="Parecer de revisor" xml:space="preserve">
+    <value>Opinión del revisor</value>
+  </data>
+  <data name="Parecer de supervisor" xml:space="preserve">
+    <value>Opinión del supervisor</value>
+  </data>
+  <data name="Parecer técnico" xml:space="preserve">
+    <value>Opinion tecnica</value>
+  </data>
+  <data name="Pele" xml:space="preserve">
+    <value>Piel</value>
+  </data>
+  <data name="Prencher formulário da nova reclamação." xml:space="preserve">
+    <value>Complete el formulario de nueva reclamación.</value>
+  </data>
+  <data name="pt" xml:space="preserve">
+    <value>es</value>
+  </data>
+  <data name="pt1" xml:space="preserve">
+    <value>es</value>
+  </data>
+  <data name="pt2" xml:space="preserve">
+    <value>es</value>
+  </data>
+  <data name="pt3" xml:space="preserve">
+    <value>es</value>
+  </data>
+  <data name="Reclamação" xml:space="preserve">
+    <value>Reclamación</value>
+  </data>
+  <data name="Rejeitada" xml:space="preserve">
+    <value>Rechazada</value>
+  </data>
+  <data name="Reparação do artigo" xml:space="preserve">
+    <value>Reparación de artículo</value>
+  </data>
+  <data name="Responsável" xml:space="preserve">
+    <value>Responsable</value>
+  </data>
+  <data name="Salvar reclamação" xml:space="preserve">
+    <value>Guardar reclamación</value>
+  </data>
+  <data name="Selecione status seguinte" xml:space="preserve">
+    <value>Seleccione el status siguiente</value>
+  </data>
+  <data name="Selecione um agrupamento de lojas" xml:space="preserve">
+    <value>Seleccione una agrupación de tiendas</value>
+  </data>
+  <data name="Selecione um artigo" xml:space="preserve">
+    <value>Seleccione un artículo</value>
+  </data>
+  <data name="Selecione um tamanho" xml:space="preserve">
+    <value>Seleccione un tamaño</value>
+  </data>
+  <data name="Selecione um telefone de cliente" xml:space="preserve">
+    <value>Seleccione un teléfono de cliente</value>
+  </data>
+  <data name="Selecione uma empresa" xml:space="preserve">
+    <value>Seleccione una empresa</value>
+  </data>
+  <data name="Selecione uma loja" xml:space="preserve">
+    <value>Seleccione una tienda</value>
+  </data>
+  <data name="Status seguinte" xml:space="preserve">
+    <value>Status siguiente</value>
+  </data>
+  <data name="Tamanho" xml:space="preserve">
+    <value>Tamaño</value>
+  </data>
+  <data name="Telefone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="Tipo de contacto" xml:space="preserve">
+    <value>Tipo de contacto</value>
+  </data>
+  <data name="Troca de artigo" xml:space="preserve">
+    <value>Intercambio de artículo</value>
+  </data>
+  <data name="Último contacto" xml:space="preserve">
+    <value>Ultimo contacto</value>
+  </data>
+</root>

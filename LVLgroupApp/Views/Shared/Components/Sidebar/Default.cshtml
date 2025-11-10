@@ -1,0 +1,707 @@
+﻿@using Core.Enums
+@using Core.Entities.Identity
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SharedResource> localizer
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var isSuperAdmin = false;
+    var isAdmin = false;
+    var isRevisor = false;
+    var isSupervisor = false;
+    var isGerenteLoja = false;
+    var isColaborador = false;
+
+    if (User.Identity.IsAuthenticated)
+    {
+        var userId = UserManager.GetUserId(User);
+        var currentUser = await UserManager.FindByIdAsync(userId);
+
+        isSuperAdmin = await UserManager.IsInRoleAsync(currentUser, Roles.SuperAdmin.ToString());
+        isAdmin = await UserManager.IsInRoleAsync(currentUser, Roles.Admin.ToString());
+        isRevisor = await UserManager.IsInRoleAsync(currentUser, Roles.Revisor.ToString());
+        isSupervisor = await UserManager.IsInRoleAsync(currentUser, Roles.Supervisor.ToString());
+        isGerenteLoja = await UserManager.IsInRoleAsync(currentUser, Roles.GerenteLoja.ToString());
+        isColaborador = await UserManager.IsInRoleAsync(currentUser, Roles.Colaborador.ToString());
+    }
+}
+
+
+<style>
+    .animate-icon {
+        transition: 0.4s;
+    }
+
+    .rotate {
+        transform: rotate(180deg);
+    }
+
+</style>
+
+
+<!-- offcanvas -->
+<div id="sidebar" class="offcanvas offcanvas-start sidebar-nav" data-bs-theme="auto" tabindex="-1">
+
+    <!-- offcanvas header -->
+    <div class="offcanvas-header d-block text-center p-2">
+        <a href="/" id="brand-logo-text" class="brand-link text-wrap text-center text-decoration-none">
+            <img id="brand-logo" src="~/images/logo-transparent.png" width="60px" alt="logo" class="img-brand" style="opacity: .8">
+            <br />
+            <span class="fw-bold">@localizer["Administração"]</span>
+        </a>
+    </div>
+    <!-- offcanvas header -->
+
+    <!-- offcanvas body -->
+    <div class="offcanvas-body p-2 py-4">
+        <nav id="offcanvas-nav">
+            <ul class="navbar-nav">
+
+                <li class="nav-item pb-3">
+                    <a href="/" class="nav-link px-3">
+                        <span class="me-2"><i class="nav-icon fas fa-home"></i></span>
+                        <span>@localizer["Página Inicial"]</span>
+                    </a>
+                </li>
+
+
+                <li class="my-1"><hr class="dropdown-divider" /></li>
+
+
+                <!-- Dashboard -->
+                @{
+                    if (isSuperAdmin || isAdmin || isSupervisor || isRevisor || isGerenteLoja || isColaborador)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#dashboard">
+                                <span class="me-2"><i class="nav-icon ion ion-ios-stats" style="font-size: 20px;"></i></span>
+                                <span>@localizer["Dashboard"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="dashboard">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#DashboardVendas">
+                                            <span class="me-2"><i class="nav-icon fas fa-euro-sign"></i></span>
+                                            <span>@localizer["Vendas"]</span>
+                                            <span class="ms-auto">
+                                                <span class="right-icon">
+                                                    <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                                </span>
+                                            </span>
+                                        </a>
+                                        <div class="collapse in sidebar-collapse" id="DashboardVendas">
+                                            <ul class="navbar-nav ps-3">
+                                                <li>
+                                                    <a asp-area="Dashboard" asp-controller="DashboardVendasGeral" asp-action="Index" class="nav-link dropdown-item px-3">
+                                                        <span class="me-2"><i class="nav-icon fas fa-line-chart"></i></span>
+                                                        <span>@localizer["Vendas do dia"]</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-area="Dashboard" asp-controller="DashboardVendasTops" asp-action="Index" class="nav-link dropdown-item px-3">
+                                                        <span class="me-2"><i class="nav-icon fas fa-line-chart"></i></span>
+                                                        <span>@localizer["Vendas LVL group"]</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-area="Dashboard" asp-controller="DashboardVendasRankingLojas" asp-action="Index" class="nav-link dropdown-item px-3">
+                                                        <span class="me-2"><i class="nav-icon fas fa-line-chart"></i></span>
+                                                        <span>@localizer["Ranking de Lojas"]</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#DashboardClaims">
+                                            <span class="me-2"><i class="nav-icon fas fa-retweet"></i></span>
+                                            <span>@localizer["Reclamações"]</span>
+                                            <span class="ms-auto">
+                                                <span class="right-icon">
+                                                    <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                                </span>
+                                            </span>
+                                        </a>
+                                        <div class="collapse in sidebar-collapse" id="DashboardClaims">
+                                            <ul class="navbar-nav ps-3">
+                                                <li>
+                                                    <a asp-area="Dashboard" asp-controller="DashboardGeral" asp-action="Index" class="nav-link dropdown-item px-3">
+                                                        <span class="me-2"><i class="nav-icon fas fa-chart-bar"></i></span>
+                                                        <span>@localizer["Reclamações-Geral"]</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-area="Dashboard" asp-controller="DashboardTops" asp-action="Index" class="nav-link dropdown-item px-3">
+                                                        <span class="me-2"><i class="nav-icon ion ion-ios-podium" style="font-size: 20px;"></i></span>
+                                                        <span>@localizer["Reclamações-Rankings"]</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Dashboard -->
+
+
+                
+
+
+                <!-- Administração Utilizadores -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#utilizadores">
+                                <span class="me-2"><i class="nav-icon far fa-user"></i></span>
+                                <span>@localizer["Utilizadores"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="utilizadores">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Admin" asp-controller="User" asp-action="Index" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-people"></i></span>
+                                            <span>@localizer["Utilizadores"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" id="UpdateMigration" onclick="UpdateMigration()" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-people"></i></span>
+                                            <span>@localizer["Verificar utilizadores"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Admin" asp-controller="Role" asp-action="Index" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon far fa-address-card"></i></span>
+                                            <span>@localizer["Funções"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Notification" asp-controller="Notification" asp-action="Index" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-bell"></i></span>
+                                            <span>@localizer["Notificações"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Admin" asp-controller="AuditLog" asp-action="Index" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-list"></i></span>
+                                            <span>@localizer["Registo de atividade"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Utilizadores -->
+
+
+                
+
+
+                <!-- Administração Infraestrutura -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Infraestrutura">
+                                <span class="me-2"><i class="nav-icon fas fa-th"></i></span>
+                                <span>@localizer["Infraestrutura"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="Infraestrutura">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Business" asp-controller="Empresa" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon far fa-building"></i></span>
+                                            <span>@localizer["Empresas"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Business" asp-controller="Grupoloja" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-sitemap"></i></span>
+                                            <span>@localizer["Agrupamentos"]</span>
+                                        </a>
+                                    </li>
+                                    <!-- <li>
+                                        <a asp-area="Business" asp-controller="Loja" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-house-user"></i></span>
+                                            <span>@localizer["Lojas"]</span>
+                                        </a>
+                                    </li>-->
+
+
+
+                                    <li>
+                                        <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Lojas">
+                                            <span class="me-2"><i class="nav-icon fas fa-house-user"></i></span>
+                                            <span>@localizer["Lojas"]</span>
+                                            <span class="ms-auto">
+                                                <span class="right-icon">
+                                                    <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                                </span>
+                                            </span>
+                                        </a>
+                                        <div class="collapse in sidebar-collapse" id="Lojas">
+                                            <ul class="navbar-nav ps-3">
+                                                <li>
+                                                    <a asp-area="Business" asp-controller="Loja" asp-action="Index" class="nav-link px-3 my-1">
+                                                        <span class="me-2"><i class="nav-icon fas fa-store"></i></span>
+                                                        <span>@localizer["Lojas"]</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-area="Ocorrencia" asp-controller="Ocorrencia" asp-action="Index" class="nav-link px-3 my-1">
+                                                        <span class="me-2"><i class="nav-icon fas fa-cogs"></i></span>
+                                                        <span>@localizer["Atividade"]</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+
+
+
+
+
+                                    <li>
+                                        <a asp-area="Business" asp-controller="Mercado" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-globe"></i></span>
+                                            <span>@localizer["Mercados"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Infraestrutura -->
+
+
+                
+
+
+                <!-- Administração Ocorrências -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Ocorrencias">
+                                <span class="me-2"><i class="nav-icon fas fa-bolt"></i></span>
+                                <span>@localizer["Ocorrências"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="Ocorrencias">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Ocorrencia" asp-controller="TipoOcorrencia" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-menu" style="font-size: 20px;"></i></span>
+                                            <span>@localizer["Tipos de Ocorrências"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ocorrencia" asp-controller="Ocorrencia" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-flash" style="font-size: 20px;"></i></span>
+                                            <span>@localizer["Ocorrências"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Ocorrências -->
+
+
+                
+
+
+                <!-- Reports -->
+                @{
+                    if (isSuperAdmin || isAdmin || isSupervisor || isRevisor || isGerenteLoja || isColaborador)
+                    {
+                        // <li>
+                        //     <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#reports">
+                        //         <span class="me-2"><i class="nav-icon ion ion-ios-create" style="font-size: 20px;"></i></span>
+                        //         <span>@localizer["Relatórios"]</span>
+                        //         <span class="ms-auto">
+                        //             <span class="right-icon">
+                        //                 <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                        //             </span>
+                        //         </span>
+                        //     </a>
+                        //     <div class="collapse in sidebar-collapse" id="reports">
+                        //         <ul class="navbar-nav ps-3">
+                        //             <li>
+                        //                 <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#QuestionTemplates">
+                        //                     <span class="me-2"><i class="nav-icon fas fa-list-alt"></i></span>
+                        //                     <span>@localizer["Modelos"]</span>
+                        //                     <span class="ms-auto">
+                        //                         <span class="right-icon">
+                        //                             <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                        //                         </span>
+                        //                     </span>
+                        //                 </a>
+                        //                 <div class="collapse in sidebar-collapse" id="QuestionTemplates">
+                        //                     <ul class="navbar-nav ps-3">
+                        //                         <li>
+                        //                             <a asp-area="Report" asp-controller="QuestionTemplate" asp-action="Index" class="nav-link dropdown-item px-3">
+                        //                                 <span class="me-2"><i class="nav-icon fas fa-question"></i></span>
+                        //                                 <span>@localizer["Modelos de Perguntas"]</span>
+                        //                             </a>
+                        //                         </li>
+                        //                         <li>
+                        //                             <a asp-area="Report" asp-controller="ReportType" asp-action="Index" class="nav-link dropdown-item px-3">
+                        //                                 <span class="me-2"><i class="nav-icon fas fa-file-alt"></i></span>
+                        //                                 <span>@localizer["Tipos de Relatórios"]</span>
+                        //                             </a>
+                        //                         </li>
+                        //                         <li>
+                        //                             <a asp-area="Report" asp-controller="ReportTemplate" asp-action="Index" class="nav-link dropdown-item px-3">
+                        //                                 <span class="me-2"><i class="nav-icon fas fa-file"></i></span>
+                        //                                 <span>@localizer["Modelos de Relatórios"]</span>
+                        //                             </a>
+                        //                         </li>
+                        //                     </ul>
+                        //                 </div>
+                        //             </li>
+                        //             <li>
+                        //                 <a asp-area="Report" asp-controller="Report" asp-action="Index" class="nav-link px-3 my-1">
+                        //                     <span class="me-2"><i class="nav-icon fas fa-file-signature" style="font-size: 20px;"></i></span>
+                        //                     <span>@localizer["Relatórios"]</span>
+                        //                 </a>
+                        //             </li>
+                        //         </ul>
+                        //     </div>
+                        // </li>
+                        //
+                        //<li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Reports -->
+
+
+                
+
+
+                <!-- Administração Vendas -->
+                @{
+                    if (isSuperAdmin || isAdmin || isSupervisor)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Vendas">
+                                <span class="me-2"><i class="nav-icon fas fa-euro-sign"></i></span>
+                                <span>@localizer["Vendas"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="Vendas">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Vendas" asp-controller="VendaSemanal" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-calendar" style="font-size: 20px;"></i></span>
+                                            <span>@localizer["Vendas semanais"]</span>
+                                        </a>
+                                    </li>
+                                    <!-- <li>
+                                        <a href="#" id="UpdateVendasDiarias" onclick="UpdateVendasDiarias()" class="nav-link dropdown-item px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-dolar"></i></span>
+                                            <span>@localizer["Update VendasDiarias"]</span>
+                                        </a>
+                                    </li> -->
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Vendas -->
+
+
+                
+
+
+                <!-- Administração Produtos -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Produtos">
+                                <span class="me-2"><i class="nav-icon fas fa-shopping-bag"></i></span>
+                                <span>@localizer["Produtos"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="Produtos">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Artigo" asp-controller="Artigo" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon ion ion-ios-shirt" style="font-size: 20px;"></i></span>
+                                            <span>@localizer["Artigos"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Artigo" asp-controller="Gender" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="nav-icon fas fa-venus-mars"></i></span>
+                                            <span>@localizer["Géneros"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Produtos -->
+
+
+                
+
+
+                <!-- Administração Clientes -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li class="nav-item">
+                            <a asp-area="Cliente" asp-controller="Cliente" asp-action="Index" class="nav-link px-3 my-1">
+                                <span class="me-2"><i class="fas fa-user-tie nav-icon"></i></span>
+                                <span>@localizer["Clientes"]</span>
+                            </a>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Clientes -->
+
+
+                
+
+
+                <!-- Administração Reclamações -->
+                @{
+                    if (isSuperAdmin)
+                    {
+                        <li>
+                            <a class="nav-link px-3 my-1 sidebar-link" data-bs-toggle="collapse" href="#Reclamação">
+                                <span class="me-2"><i class="nav-icon fas fa-retweet"></i></span>
+                                <span>@localizer["Reclamações"]</span>
+                                <span class="ms-auto">
+                                    <span class="right-icon">
+                                        <i class="animate-icon right fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </a>
+                            <div class="collapse in sidebar-collapse" id="Reclamação">
+                                <ul class="navbar-nav ps-3">
+                                    <li>
+                                        <a asp-area="Claim" asp-controller="Claim" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fas fa-retweet nav-icon"></i></span>
+                                            <span>@localizer["Reclamações"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Claim" asp-controller="Status" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fas fa-traffic-light nav-icon"></i></span>
+                                            <span>@localizer["Status"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Claim" asp-controller="Fototag" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fas fa-tag nav-icon"></i></span>
+                                            <span>@localizer["Etiquetas de fotos"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Claim" asp-controller="Prazolimite" asp-action="Index" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fas fa-clock nav-icon"></i></span>
+                                            <span>@localizer["Prazos limite"]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" id="cleanTempFolders" onclick="cleanTempFolders()" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fa fa-trash nav-icon"></i></span>
+                                            <span>@localizer["Pastas temp."]</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" id="cleanTempFolders" onclick="verifyFolders()" class="nav-link px-3 my-1">
+                                            <span class="me-2"><i class="fa fa-folder nav-icon"></i></span>
+                                            <span>@localizer["Verificar pastas de fotos"]</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="my-1"><hr class="dropdown-divider" /></li>
+                    }
+                }
+                <!-- Administração Reclamações -->
+
+
+                
+            </ul>
+        </nav>
+    </div>
+    <!-- offcanvas body -->
+
+</div>
+<!-- offcanvas -->
+
+
+<script>
+
+    var collapsibles = document.getElementsByClassName('sidebar-link');
+    //alert('collapsibles = ' + collapsibles.length);
+
+    for (var i = 0; i < collapsibles.length; i++) {
+        collapsibles[i].addEventListener('click', function () {
+            var icon = this.querySelector('.right-icon i.fas');
+            icon.classList.toggle('rotate');
+        });
+    };
+
+    var collapseList = document.getElementsByClassName('sidebar-collapse');
+    //alert(collapseList.length);
+    for (var i = 0; i < collapseList.length; i++) {
+        if (collapseList[i].id) {
+            collapseList[i].addEventListener('shown.bs.collapse', function () {
+                localStorage.setItem("sidebar_coll_" + this.id, true);
+                //console.log('SHOW ' + this.id);
+            });
+            collapseList[i].addEventListener('hidden.bs.collapse', function () {
+                localStorage.removeItem("sidebar_coll_" + this.id);
+                //console.log('HIDE' + this.id);
+            });
+        }
+    };
+
+    function cleanTempFolders() {
+
+        //alert("cleanTempFolders");
+        var _url = "/Claim/Claim/OnPostClean";
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        alert('@localizer["Todas as pastas temporárias foram removidas com sucesso."]');
+                    }
+                },
+                error: function () {
+                    alert("Error occurs");
+                }
+            }
+        );
+    }
+
+    function verifyFolders() {
+
+        //alert("verifyFolders");
+        var _url = "/Claim/Claim/OnPostVerifyFolders";
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        alert('@localizer["Todas as pastas de fotos foram verificadas."]');
+                    }
+                },
+                error: function () {
+                    alert("Error occurs");
+                }
+            }
+        );
+    }
+
+    function UpdateMigration() {
+
+        //alert("UpdateMigration");
+        var _url = "/Admin/User/UpdateMigration";
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        alert('@localizer["Todos os utilizadores verificados."]');
+                    }
+                },
+                error: function () {
+                    alert("Error occurs");
+                }
+            }
+        );
+    }
+
+    function UpdateVendasDiarias() {
+
+        //alert("UpdateVendasDiarias");
+        var _url = "/Vendas/VendaSemanal/UpdateVendasDiarias2";
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.status == "success") {
+                        alert('@localizer["Todas as vendas foram atualizadas."]');
+                    }
+                },
+                error: function () {
+                    alert("Error occurs");
+                }
+            }
+        );
+    }
+</script>

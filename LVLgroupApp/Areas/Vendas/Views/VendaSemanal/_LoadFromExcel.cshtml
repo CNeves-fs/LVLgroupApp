@@ -1,0 +1,264 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@Html.AntiForgeryToken()
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        <div class="card-header">
+            <div class="card-title">
+                @localizer["Carregar ficheiro excel"]
+            </div>
+        </div>
+        <div class="card-body py-5" style="min-height: 100px;">
+            <input type="text" name="connectionId" id="connectionId" hidden>
+            <div class="col-md-12 col-sm-12 row">
+                <div class="col-sm-12 custom-file" style="text-align: center;">
+                    <input type="file" id="fileUpload" name="fileUpload" accept=".xlsx" class="inputfile" multiple>
+                    <label id="labelfileUpload" for="fileUpload">
+                        <i class="fas fa-upload"></i>&nbsp;&nbsp;
+                        <span id="spanfileUpload">@localizer["Selecionar excel"]</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-sm-12 row">
+                <div class="col-sm-12 mt-4" style="text-align: center;">
+                    <button id="btnUpload" class="btn btn-danger">@localizer["Upload excel"]</button>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12" style="min-height: 20px;">
+                    <span name="staus1" id="status1"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 col-sm-12" style="min-height: 20px;">
+                    <span name="staus2" id="status2"></span>
+                </div>
+            </div>
+
+            <br/>
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    <div class="progress">
+                        <div id="uploadprogress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+
+        </div>
+        <div class="card-footer">
+            <button type="button" id="btnCancel" class="btn btn-success close-button" data-bs-dismiss="modal">@localizer["Cancelar"]</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .inputfile {
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        position: absolute;
+        z-index: -1;
+    }
+
+        .inputfile + label {
+            max-width: 80%;
+            /*font-size: 1.25rem;*/ /* 20px */
+            font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-block;
+            overflow: hidden;
+            padding: 10px 20px;
+        }
+
+            .inputfile:focus + label,
+            .inputfile + label:hover {
+                /*background-color: red;*/
+                outline: 1px dotted #000;
+                outline: -webkit-focus-ring-color auto 5px;
+            }
+</style>
+
+<script type="text/javascript" language=javascript>
+
+    var progressbar = document.querySelector("#uploadprogress");
+
+    function progress(percent) {
+        progressbar.style.width = percent + "%";
+        progressbar.innerText = percent + "%";
+        //$("#uploadprogress").html(percent + "%");
+    };
+
+
+    $(document).ready(function () {
+
+        //alert("start SignalR.");
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/progresshub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("ReceiveStartMessage", (startMessage) => {
+            $('#status1').html(startMessage);
+            $('#status2').html("");
+            progressbar.style.width = "0%";
+            progressbar.innerText = "";
+
+            console.log("ReceiveStartMessage: " + startMessage);
+        });
+
+        connection.on("ReceiveSetMessage", (setMessage, percentage) => {
+            $('#status2').html(setMessage);
+            progress(percentage);
+            console.log("ReceiveSetMessage: " + setMessage + " Progress = " + percentage + "%");
+        });
+
+        connection.on("ReceiveStopMessage", (stopMessage) => {
+            $('#status1').html("");
+            $('#status2').html(stopMessage);
+            console.log("ReceiveEndMessage: " + stopMessage);
+        });
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        async function stop() {
+            try {
+                await connection.stop();
+                console.log("SignalR Disconnected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        // Start the connection.
+        start();
+    });
+
+
+
+</script>
+
+<script type="text/javascript" language=javascript>
+
+    $.validator.unobtrusive.parse(document);
+
+    $("#btnUpload").on('click', function () {
+
+        var _files = $('#fileUpload').prop("files");
+        var _url = "/Vendas/vendaSemanal/OnPostLoadFromExcel?handler=filesExcel";
+        var formData = new FormData();
+        for (var i = 0; i != _files.length; i++) {
+            formData.append("filesExcel", _files[i]);
+        }
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (data) {
+                    if (data.status == "success") {
+                        var $el = $('#fileUpload');
+                        $el.wrap('<form>').closest('form').get(0).reset();
+                        $el.unwrap();
+                        $('#spanfileUpload').html('@localizer["Selecionar excel"]');
+                        alert(data.artigos + " " + '@localizer["Vendas carregadas com sucesso."]');
+                        progressbar.style.width = "0%";
+                        progressbar.innerText = "";
+                        $('#status1').html("");
+                        $('#status2').html("");
+                    }
+                },
+                error: function () {
+                    alert("Error occurs");
+                }
+            }
+        );
+    });
+
+    $('#btnCancel').on('click', function () {
+        //alert("Cancel btn click");
+
+        // Stop the connection.
+        stop();
+        console.log("Stop SignalR.")
+
+        var _url = "/Vendas/vendaSemanal/OnPostCancel";
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        //alert("Uploaded Excel files deleted with success");
+                        $('#viewAll').load('/vendas/vendaSemanal/LoadAll');
+                    }
+                },
+                error: function () {
+                    //alert("Error occurs");
+                    $('#viewAll').load('/venda/vendaSemanal/LoadAll');
+                }
+            }
+        );
+    });
+
+
+    var input = document.getElementById("fileUpload"),
+        label = document.getElementById("labelfileUpload"),
+        span = document.getElementById("spanfileUpload"),
+		spanVal = span.innerHTML;
+
+	input.addEventListener( 'change', function( e )
+	{
+        //alert("files: " + this.files.length);
+        var fileName = '';
+
+        if (this.files && this.files.length > 1)
+        {
+            //multiple files to upload
+            spanVal = this.files.length + '@localizer["ficheiros selecionados."]';
+        }
+        else
+        {
+            //single file to upload
+            fileName = e.target.value.split('\\').pop();
+        }
+
+        if (fileName)
+        {
+            span.innerHTML = fileName;
+        }
+        else
+        {
+            span.innerHTML = spanVal;
+        }
+	});
+
+
+</script>

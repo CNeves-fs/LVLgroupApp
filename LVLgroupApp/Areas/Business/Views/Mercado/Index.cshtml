@@ -1,0 +1,42 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@{
+    ViewData["Title"] = localizer["Mercados"];
+    ViewData["Caption"] = localizer["Configure aqui os seus mercados."];
+}
+@using Core.Constants
+@using LVLgroupApp.Areas.Business.Models.Mercado
+@model MercadoViewModel
+
+<div class="card">
+    <div class="col-sm-12" style="padding:20px">
+        @if ((AuthorizationService.AuthorizeAsync(User, Permissions.Mercados.Create)).Result.Succeeded)
+        {
+            <a onclick="jQueryModalGet('/business/mercado/OnGetCreateOrEdit','@localizer["Criar mercado"]', event, 'modal-lg')" class="btn btn-success mb-3">
+                <i class="fa fa-plus-square"></i> @localizer["Criar"]
+            </a>
+        }
+
+        <a id="reload" class="btn btn-primary text-white mb-3">
+            <i class="fa fas fa-bolt"></i>
+            @localizer["Recarregar"]
+        </a>
+    </div>
+    <div id="viewAll" class="card-body table-responsive">
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#mercadoTable").DataTable();
+            loadData();
+            $('#reload').on('click', function () {
+                loadData();
+            });
+        });
+        function loadData() {
+            $('#viewAll').load('/business/mercado/LoadAll');
+        }
+    </script>
+}

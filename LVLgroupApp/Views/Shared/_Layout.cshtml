@@ -1,0 +1,65 @@
+﻿@using LVLgroupApp.Views.Shared.Components.Footer;
+@using LVLgroupApp.Views.Shared.Components.Theme;
+@using LVLgroupApp.Views.Shared.Components.Title;
+@using LVLgroupApp.Views.Shared.Components.Sidebar;
+@using LVLgroupApp.Views.Shared.Components.Header;
+@using LVLgroupApp.Views.Shared.Components.Logout;
+@using LVLgroupApp.Views.Shared.Components.FormModal;
+@using LVLgroupApp.Views.Shared.Components.ChildFormModal
+@using LVLgroupApp.Views.Shared.Components.ImageModal;
+
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>LVLgroupApp</title>
+    <partial name="_Styles" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+</head>
+<body class="hold-transition sidebar-mini sidebar-collapse">
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>
+        <div class="loader-section"></div>
+    </div>
+
+    <div class="wrapper d-flex flex-column min-vh-100">
+        @(await Component.InvokeAsync<HeaderViewComponent>())
+        @(await Component.InvokeAsync<SidebarViewComponent>())
+        <div class="content-wrapper" id="contentWrapper">
+            <div class="content">
+                <div class="container-fluid" style="padding-bottom: 20px;">
+                    @(await Component.InvokeAsync<TitleViewComponent>())
+                    @RenderBody()
+
+                    <div hidden>
+                        <input type="hidden" id="hfUserId" value="@UserManager.GetUserId(User)" />
+                        <div id="notification-title-template">@localizer["Notifications"]</div>
+                        <div id="notification-rootTitle"></div>
+                        <div id="notification-rootContent"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        @(await Component.InvokeAsync<ThemeViewComponent>())
+        @(await Component.InvokeAsync<FooterViewComponent>())
+
+        @(await Component.InvokeAsync<LogoutViewComponent>())
+        @(await Component.InvokeAsync<FormModalViewComponent>())
+        @(await Component.InvokeAsync<ChildFormModalViewComponent>())
+        @(await Component.InvokeAsync<ImageModalViewComponent>())
+        @(await Component.InvokeAsync<CarouselModalViewComponent>())
+
+    </div>
+    <partial name="_Scripts" />
+    @await Component.InvokeAsync("Notyf")
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

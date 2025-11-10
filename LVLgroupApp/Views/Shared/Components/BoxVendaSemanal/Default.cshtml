@@ -1,0 +1,70 @@
+﻿@using Core.Constants
+@using Core.Enums
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@model LVLgroupApp.Areas.Vendas.Models.VendaSemanal.BoxSemanalViewModel
+
+@{
+    var bg_color = "bg-warning";
+    if (Model.ValorTotalDaVenda >= Model.ObjetivoDaVendaSemanal)
+    {
+        bg_color = "bg-success";
+    }
+}
+
+
+
+
+<!-- Mensal -->
+<div id="smallBoxVendaSemanal" class="small-box @bg_color mb-0">
+
+    <input type="text" id="Ano_boxSemanal" name="Ano_boxSemanal" class="form-control" value="@Model.Ano" hidden>
+    <input type="text" id="NumeroDaSemana_boxSemanal" name="NumeroDaSemana_boxSemanal" class="form-control" value="@Model.NumeroDaSemana" hidden>
+
+    <input type="text" id="MercadoId_boxSemanal" name="MercadoId_boxSemanal" class="form-control" value="@Model.MercadoId" hidden>
+    <input type="text" id="EmpresaId_boxSemanal" name="EmpresaId_boxSemanal" class="form-control" value="@Model.EmpresaId" hidden>
+    <input type="text" id="GrupolojaId_boxSemanal" name="GrupolojaId_boxSemanal" class="form-control" value="@Model.GrupolojaId" hidden>
+    <input type="text" id="LojaId_boxSemanal" name="LojaId_boxSemanal" class="form-control" value="@Model.LojaId" hidden>
+
+    @{
+        var differenceValueSemanal = Math.Round(Model.ValorTotalDaVenda - Model.ObjetivoDaVendaSemanal, 2);
+        var percentValueSemanal = 0.0;
+        if (Model.ObjetivoDaVendaSemanal != 0)
+        {
+            percentValueSemanal = Math.Round(100 * (differenceValueSemanal / Model.ObjetivoDaVendaSemanal), 2);
+        }
+    }
+
+    <div class="inner p-1">
+        <h4 class="mb-0">
+            <span id="box-valordavenda">€ @Model.ValorTotalDaVenda ( @percentValueSemanal % )</span>
+        </h4>
+        <p class="mb-3" style="margin-top: -10px"><small>@localizer["Total de vendas da semana"]</small></p>
+        <h4 class="mb-0 mt-2">
+            <span id="box-objetivosemanal">€ @Model.ObjetivoDaVendaSemanal</span>
+        </h4>
+        <p class="mb-1" style="margin-top: -10px"><small>@localizer["Objetivo semanal"] (€ @differenceValueSemanal)</small></p>
+    </div>
+    <div class="icon">
+        <i class="ion ion-logo-usd"></i>
+    </div>
+
+
+    @if (AuthorizationService.AuthorizeAsync(User, Permissions.Vendas.Edit).Result.Succeeded && Model.LojaId > 0)
+    {
+        <a id="btnEditarVendaSemanal" class="small-box-footer" href="#">
+            @localizer["Venda semanal corrente"]&nbsp <strong>@Model.NumeroDaSemana</strong>
+            <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    }
+    else
+    {
+        <a class="small-box-footer" href="#">
+            @localizer["Venda semanal corrente"]&nbsp <strong>@Model.NumeroDaSemana</strong>
+            <i class="fas fa-arrow-circle-right"></i>
+        </a>
+    }
+</div>
+

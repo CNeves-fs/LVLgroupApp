@@ -1,0 +1,348 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer localizer
+@using Core.Constants
+@using LVLgroupApp.Areas.Notification.Models.Notification
+
+
+
+<style>
+    .email-view {
+        font-size: 14px;
+        font-weight: 600;
+        padding: 10px 0;
+    }
+
+    .person-view {
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .designation-view {
+        font-size: 10px;
+    }
+
+    #card-sendnotification-view {
+        position: relative;
+        top: -5px;
+    }
+
+    #targetUsers-view {
+        max-height: 70px;
+        overflow-y: auto;
+        list-style-type: none;
+    }
+</style>
+
+
+
+<table id="notificationTable" class="table table-striped dt-responsive nowrap display hover" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>@localizer["Id"]</th>
+            <th>@localizer["De"]</th>
+            <th>@localizer["Para"]</th>
+            <th>@localizer["Data"]</th>
+            <th>@localizer["Assunto"]</th>
+            <th>@localizer["Mensagem"]</th>
+            <th>@localizer["Ações"]</th>
+        </tr>
+    </thead>
+</table>
+
+
+
+<script>
+
+    $(document).ajaxStop(function () {
+        $.busyLoadFull("hide");
+    })
+
+    $(document).ready(function () {
+
+        $.busyLoadSetup({ fontawesome: "fa fa-spinner fa-spin fa-3x fa-fw" });
+
+        var options = {
+            isEnabled: true,
+            saveState: true
+        };
+
+        var languagePath = '@Url.Content("~/lib/datatables/localizer/")';
+        var languageFile = '@localizer["Portuguese.json"]';
+        var _language = languagePath + languageFile;
+
+        var table = $("#notificationTable").DataTable({
+            dom: "<'row'<'col-sm-12 col-md-4'B><'col-sm-12 col-md-4 mt-1'l><'col-sm-12 col-md-4 mt-1'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 mt-3'p>>",
+            serverSide: true,
+            stateSave: true,
+            //scrollX: true,
+            //scrollY: true,
+            responsive: false,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#navigationBar').height()
+            },
+            language: {
+                url: _language
+            },
+            lengthMenu: [
+                [20, 50, 100, 500, 1000, -1],
+                [20, 50, 100, 500, 1000, '@localizer["Todos"]'],
+            ],
+            ajax: {
+                url: "/Notification/Notification/GetNotifications",
+                type: "POST",
+                datatype: "json",
+                data: function (d) {
+                    $.busyLoadFull("show");
+                }
+            },
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de notificações"]'
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de notificações"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de notificações"]'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i>',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':visible'
+                    },
+                    title: '@localizer["Lista de notificações"]',
+                    customize: function (doc) {
+                        doc.content.splice(1, 0, {
+                            margin: [0, 0, 0, 12],
+                            alignment: 'center',
+                            image: 'data: image/*;base64,' + logo,
+                            fit: [100, 100]
+                        });
+                    }
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye-slash"></i>',
+                }
+            ],
+            columnDefs: [
+                { 
+                    visible: false, targets: [0]
+                },
+                {
+                    orderable: false, targets: [1, 2, 4, 5, 6]
+                },
+                {
+                    orderData: [0, 3], targets: [0]
+                },
+                {
+                    orderData: [3, 0], targets: [3]
+                }
+            ],
+            columns: [
+                { data: "id", name: "Id", autoWidth: true },
+                {
+                    data: "fromUser",
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log("data = " + str); // Logs output to dev tools console.
+                        
+                        let imagem = "";
+                        if (data.profilePicture != null && data.profilePicture.length > 0) {
+                            imagem = `<img class="rounded-circle mt-2" style="display:block; width:100%; height:auto; max-width: 32px;" src="data:image/*;base64,${data.profilePicture}">`;
+                        }
+                        else {
+                            imagem = `<img class="rounded-circle mt-2" style="display:block; width:100%; height:auto; max-width: 32px;" src="/images/default-user.png">`;
+                        }
+
+                        return `
+                            <div class="d-inline-flex flex-row border border-2 border-primary rounded">
+                                <div class="ps-3 my-3">
+                                    ${imagem}
+                                </div>
+                                <div>
+                                    <div class="my-1 px-3">
+                                        <p class="email py-0 m-0">${data.name}</p>
+                                        <div class="person">
+                                            <span class="m-0" style="font-size: x-small">${data.email}</span>
+                                        </div>
+                                        <p class ="py-0 m-0">
+                                            <small>
+                                                <span class="badge text-bg-warning" style="padding-top: 5px;">
+                                                    ${data.roleName} ${data.local}
+                                                </span>
+                                            </small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                },
+                {
+                    data: "toUsers",
+                    render: function (data) {
+                        str = JSON.stringify(data, null, 4); // (Optional) beautiful indented output.
+                        console.log("data = " + str); // Logs output to dev tools console.
+
+                        let tousers = "";
+                        for (let i = 0; i < data.length; i++) {
+                            if (i === 2) { break; }
+                            let imagem = "";
+                            if (data[i].profilePicture != null && data[i].profilePicture.length > 0) {
+                                imagem = `<img class="rounded-circle mt-2" style="display:block; width:100%; height:auto; max-width: 32px;" src="data:image/*;base64,${data[i].profilePicture}">`;
+                            }
+                            else {
+                                imagem = `<img class="rounded-circle mt-2" style="display:block; width:100%; height:auto; max-width: 32px;" src="/images/default-user.png">`;
+                            }
+                            let user = `
+                                <li style="list-style-type: none;">
+                                    <div class="d-inline-flex flex-row">
+                                        <div class="my-1">
+                                            ${imagem}
+                                        </div>
+
+                                        <div>
+                                            <div class="my-0 px-3">
+                                                <div class="person">
+                                                        <span class="m-0" style="font-size: x-small">${data[i].email}</span>
+                                                </div>
+                                                <p class ="py-0 m-0">
+                                                    <span class="badge text-bg-warning" style="padding-top: 5px;">
+                                                        ${data[i].roleName} ${data[i].local}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </li>
+                            `;
+                            tousers += user;
+                        }
+                        if (data.length > 2)
+                            return `
+                                <ul class="m-0">
+                                    ${tousers}
+                                    <li style="list-style-type: none;">
+                                        <span class="badge text-bg-primary rounded-pill">+${data.length-2}</span>
+                                    </li>
+                                </ul>
+                            `;
+                        return `
+                            <ul>
+                                ${tousers}
+                            </ul>
+                        `;
+                    }
+                },
+                { data: "date", name: "Date", autoWidth: true },               
+                { data: "subject", name: "Subject", autoWidth: true },
+                { data: "text", name: "Text", autoWidth: true },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `<div class="btn-group dropend">
+                                    <button id="dropdown_${data}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        @localizer["Ação"]
+                                    </button>
+                                        <div class="dropdown-menu dropdown-menu-table shadow animated--grow-in" aria-labelledby="dropdown_${data}">
+                                        <a class="dropdown-item" onclick="jQueryModalGet('/notification/notification/OnGetView?id=${data}', '@localizer["Notificação"]', event, 'modal-lg')"><i class="fas fa-eye"></i> @localizer["Abrir notificação"]</a>
+                                                <form id="form_delete_${data}" action="/notification/notification/OnPostDelete?id=${data}" onsubmit="return jQueryModalDelete(this, event, '@localizer["Tem a certeza que pretende remover esta notificação?"]')">
+                                            <a class="dropdown-item" href="javascript:$('#form_delete_${data}').submit();"><i class="fas fa-trash-alt"></i> @localizer["Remover"]</a>
+                                        </form>
+                                    </div>
+                                </div>`;
+                    }
+                }
+            ]
+        });
+
+        $('#notificationTable').on('show.bs.dropdown', function () {
+            $('.dataTables_scrollBody').addClass('dropdown-visible');
+            $('.dataTables_scrollHead').addClass('dropdown-visible');
+        })
+        .on('hide.bs.dropdown', function () {
+            $('.dataTables_scrollBody').removeClass('dropdown-visible');
+            $('.dataTables_scrollHead').removeClass('dropdown-visible');
+        });
+
+        $('#notificationTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected'); 
+            }
+        });
+
+        $('#notificationTable tbody').on('dblclick', 'tr', function () {
+            $(this).addClass('selected');
+            var data = table.row(this).data();
+            jQueryModalGet('/notification/notification/OnGetView?id=' + data.id, '@localizer["Notificação"]', event, 'modal-lg')
+        });
+
+    });
+
+    var logo = getLVLlogo('logo-lvl-dark.png');
+
+    function getLVLlogo(logoName) {
+
+        let _logoName = logoName;
+        let _url = "/Claim/Foto/GetLVLlogo?logoName=_logoName";
+        let formData = new FormData();
+        formData.append("logoName", _logoName);
+
+        $.ajax(
+            {
+                type: "POST",
+                url: _url,
+                processData: false,
+                contentType: false,
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        logo = data.logoBase64;
+                        //alert(logo);
+                    }
+                },
+                error: function () {
+                    alert("getLVLlogo: Error occurs");
+                }
+            }
+        );
+
+    };
+
+</script>
