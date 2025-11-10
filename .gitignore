@@ -1,0 +1,19 @@
+﻿# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.log
+# Rider / VS Code
+.idea/
+.vscode/
+# NuGet / build
+*.nupkg
+artifacts/
+# node / libs
+node_modules/
+wwwroot/lib/
+# secrets / local
+secrets.json
+*.local
